@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BasketStats.API\BasketStats.API.csproj" />
+    <ProjectReference Include="..\..\..\src\BasketStats.API\BasketStats.API.csproj" />
   </ItemGroup>
 
 </Project>
