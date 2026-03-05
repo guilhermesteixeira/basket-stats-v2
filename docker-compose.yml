@@ -1,0 +1,88 @@
+version: '3.9'
+
+services:
+  # Keycloak - Authentication/Authorization
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: basket-stats-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: dev-file
+    ports:
+      - "8080:8080"
+    command:
+      - start-dev
+    networks:
+      - basket-stats-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Firestore Emulator - Database
+  firestore-emulator:
+    image: google/cloud-firestore-emulator:latest
+    container_name: basket-stats-firestore
+    ports:
+      - "8081:8081"
+    environment:
+      FIRESTORE_PROJECT_ID: basket-stats-dev
+    networks:
+      - basket-stats-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Google Cloud Storage Emulator (Fake GCS Server)
+  gcs-emulator:
+    image: fsouza/fake-gcs-server:latest
+    container_name: basket-stats-gcs
+    ports:
+      - "4443:4443"
+    command:
+      - -scheme
+      - http
+      - -external-url
+      - http://localhost:4443
+      - -backend
+      - memory
+    networks:
+      - basket-stats-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4443"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Optional backup/cache database
+  postgres:
+    image: postgres:15-alpine
+    container_name: basket-stats-postgres
+    environment:
+      POSTGRES_DB: basket_stats
+      POSTGRES_USER: basket_user
+      POSTGRES_PASSWORD: basket_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - basket-stats-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U basket_user -d basket_stats"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+
+networks:
+  basket-stats-network:
+    driver: bridge
