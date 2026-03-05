@@ -92,7 +92,47 @@ docker-compose down -v && docker-compose up -d firestore-emulator
 2. Login with `admin` / `admin`
 3. Configure realm and clients
 
-## Troubleshooting
+### Configure Google OAuth (Optional but Recommended)
+
+#### Step 1: Create Google OAuth Credentials
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or use existing)
+3. Enable OAuth 2.0
+4. Create OAuth 2.0 Client ID (Web application):
+   - Authorized redirect URIs: `http://localhost:8080/realms/master/broker/google/endpoint`
+5. Copy Client ID and Client Secret
+
+#### Step 2: Add Google as Identity Provider in Keycloak
+1. Go to Admin Console: http://localhost:8080/admin
+2. Select realm (master)
+3. Go to **Identity Providers** → Add provider → Google
+4. Paste Google Client ID and Client Secret
+5. Set Display name: "Google"
+6. Save
+
+#### Step 3: Configure OAuth Scope (Optional)
+Default scopes: `openid profile email`
+
+#### Step 4: Update Application Configuration
+Add to `.env`:
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+KEYCLOAK_GOOGLE_PROVIDER_URL=http://localhost:8080/realms/master/broker/google
+```
+
+#### Step 5: Test Login Flow
+- Visit your app login page
+- Should show "Login with Google" option
+- Click and authenticate with Google account
+- Should redirect back to app
+
+#### Keycloak + Google Flow
+```
+User → App → Keycloak → Google → Keycloak → App
+                         ↓
+                    OAuth token
+```
 
 **Services won't start:**
 - Check port availability: `lsof -i :8080` (example for port 8080)

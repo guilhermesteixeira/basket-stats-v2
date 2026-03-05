@@ -105,7 +105,17 @@ basket-stats/
 
 ## Business Rules
 
-### Event Management
+### Authentication & Authorization
+1. **Keycloak OpenID Connect**
+   - Primary authentication provider
+   - User credentials stored in Keycloak
+   - JWT tokens issued for API requests
+
+2. **Google OAuth Integration (Optional)**
+   - Users can authenticate via Google account
+   - Google email linked to Keycloak user
+   - Requires Google OAuth credentials
+   - Setup: See `.docker/README.md` for configuration steps
 1. **Team Ownership & Event Types**
    - Team owner can register: Score, Missed Shot, Free Throw, Foul, Substitution for their team
    - Opponent can register: Score, Missed Shot, and Free Throw for opponent team
