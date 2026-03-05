@@ -93,8 +93,9 @@ basket-stats/
 
 ### Data Structure
 - **Match**: id, teams, players, startTime, status, events[]
-- **Event**: timestamp, type (score, foul, substitution), details, teamId, playerId
+- **Event**: timestamp, type (score, missed_shot, foul, substitution), details, teamId, playerId
 - **ScoreEvent**: points (2 or 3), coordinates {x, y}, playerName
+- **MissedShotEvent**: coordinates {x, y}, playerName
 - **User**: id, email, keycloakId, roles[]
 
 ---
@@ -103,17 +104,21 @@ basket-stats/
 
 ### Event Management
 1. **Team Ownership & Event Types**
-   - Team owner can register all event types: Score, Foul, Substitution
-   - Opponent can only register: Score events
+   - Team owner can register: Score, Missed Shot, Foul, Substitution for their team
+   - Opponent can register: Score and Missed Shot for opponent team
    - Non-participants cannot register any events
 
 2. **Shot Coordinates Requirement**
-   - All score events (2 or 3 points) MUST include shot coordinates
-   - Coordinates represent position on court (x, y) where shot was taken
+   - Score events (made shots) MUST include coordinates (x, y)
+   - Missed shot events MUST include coordinates (x, y)
+   - Coordinates represent position on court where shot was attempted
    - User selects position on visual court image (UI component)
-   - Only coordinates {x, y} stored in database, NOT the image
-   - Coordinates used to generate player heat maps showing shooting patterns
-   - Reject score events without coordinates
+   - Only coordinates {x, y} stored in database (NOT the image)
+   - Coordinates used to generate player heat maps showing:
+     - Made shots (successful attempts)
+     - Missed shots (failed attempts)
+     - Overall shooting patterns
+   - Reject score/missed shot events without coordinates
 
 3. **Other Events**
    - Foul events do NOT require coordinates

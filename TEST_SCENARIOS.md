@@ -61,48 +61,59 @@ Define comprehensive test scenarios for MVP implementation covering:
 
 #### Event Ownership & Authorization Rules
 **KEY REQUIREMENT**: 
-- Team owner can register: Score, Foul, Substitution for their team
-- Opponent can register: Only Score for opponent team
+- Team owner can register: Score, Missed Shot, Foul, Substitution for their team
+- Opponent can register: Score and Missed Shot for opponent team
 - Non-participants cannot register any events
 
 #### Shot Coordinates Requirement
 **KEY REQUIREMENT**: 
 - Score events (2 or 3 points) must include shot coordinates (x, y)
-- Coordinates represent position on court where shot was taken
+- Missed shot events must include shot coordinates (x, y)
+- Coordinates represent position on court where shot was attempted
 - User clicks on visual court image to select position
 - Only coordinates stored in database (NOT the image itself)
-- Coordinates used to generate player heat maps
-- Reject score events without coordinates
+- Coordinates used to generate player heat maps showing:
+  - Made shots (successful attempts)
+  - Missed shots (failed attempts)
+  - Overall shooting patterns
+- Reject score/missed shot events without coordinates
 
 #### Add Event
 - TC-EVENT-001: Add score event to own team (authorized)
 - TC-EVENT-002: Add foul event to own team (authorized)
 - TC-EVENT-003: Add substitution event to own team (authorized)
+- TC-EVENT-004: Add missed shot event to own team (authorized)
 - TC-EVENT-007: Add score event to opponent team (authorized)
-- TC-EVENT-008: Deny foul event to opponent team (unauthorized)
-- TC-EVENT-009: Deny substitution to opponent team (unauthorized)
-- TC-EVENT-010: Verify event ownership restrictions enforced
-- TC-EVENT-011: Score event requires coordinates (2-pointer)
-- TC-EVENT-012: Score event requires coordinates (3-pointer)
-- TC-EVENT-013: Reject score without coordinates
-- TC-EVENT-014: Foul event does NOT require coordinates
-- TC-EVENT-015: Substitution does NOT require coordinates
-- TC-EVENT-004: Fail to add event to finished match
-- TC-EVENT-005: Fail to add event to non-existent match
-- TC-EVENT-006: Events stored in chronological order
+- TC-EVENT-008: Add missed shot to opponent team (authorized)
+- TC-EVENT-009: Deny foul event to opponent team (unauthorized)
+- TC-EVENT-010: Deny substitution to opponent team (unauthorized)
+- TC-EVENT-011: Verify event ownership restrictions enforced
+- TC-EVENT-012: Score event requires coordinates (2-pointer)
+- TC-EVENT-013: Score event requires coordinates (3-pointer)
+- TC-EVENT-014: Missed shot event requires coordinates
+- TC-EVENT-015: Reject score without coordinates
+- TC-EVENT-016: Reject missed shot without coordinates
+- TC-EVENT-017: Foul event does NOT require coordinates
+- TC-EVENT-018: Substitution does NOT require coordinates
+- TC-EVENT-019: Fail to add event to finished match
+- TC-EVENT-020: Fail to add event to non-existent match
+- TC-EVENT-021: Events stored in chronological order
 
 #### Event Retrieval
-- TC-EVENT-016: Get all events for a match
-- TC-EVENT-017: Get events filtered by type
-- TC-EVENT-018: Events returned in chronological order
-- TC-EVENT-019: Pagination support for large event lists
+- TC-EVENT-022: Get all events for a match
+- TC-EVENT-023: Get events filtered by type (score, missed, foul, substitution)
+- TC-EVENT-024: Events returned in chronological order
+- TC-EVENT-025: Pagination support for large event lists
 
 #### Coordinate Storage
-- TC-EVENT-020: Store shot coordinates (x, y) in database
-- TC-EVENT-021: Coordinates in valid court range (0-100)
-- TC-EVENT-022: Generate heat map from multiple shot coordinates
-- TC-EVENT-023: Filter heat map by player
-- TC-EVENT-024: Filter heat map by team
+- TC-EVENT-026: Store shot coordinates (x, y) for score event
+- TC-EVENT-027: Store shot coordinates (x, y) for missed shot
+- TC-EVENT-028: Coordinates in valid court range (0-100)
+- TC-EVENT-029: Generate heat map from made shots
+- TC-EVENT-030: Generate heat map from missed shots
+- TC-EVENT-031: Generate combined heat map (made + missed)
+- TC-EVENT-032: Filter heat map by player
+- TC-EVENT-033: Filter heat map by team
 
 ---
 
