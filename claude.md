@@ -69,7 +69,6 @@ basket-stats/
 - Microsoft.EntityFrameworkCore
 - IdentityModel (OpenID Connect)
 - Google.Cloud.Firestore
-- Google.Cloud.PubSub.V1
 
 ---
 
@@ -93,15 +92,64 @@ basket-stats/
    - GET `/matches` - list matches
 
 ### Data Structure
-- **Match**: id, teams, players, startTime, status, events[]
-- **Event**: timestamp, type (score, foul, substitution), details
+- **Match**: id, teams, players, startTime, status, events[], periods[] (per-period data), teamFouls[] (per period)
+- **Period**: number (1-4), quarterStartTime, quarterEndTime, duration (in seconds)
+- **Event**: timestamp (absolute), periodNumber, periodTimestamp (time within period in seconds), type (score, missed_shot, free_throw, foul, substitution), details, teamId, playerId
+- **ScoreEvent**: points (2 or 3), coordinates {x, y}, playerName
+- **MissedShotEvent**: coordinates {x, y}, playerName
+- **FreeThrowEvent**: made (boolean), foulType (personal, technical, flagrant), playerName
+- **FoulEvent**: foulType, playerFouled, flagrant (boolean)
 - **User**: id, email, keycloakId, roles[]
 
-### Infrastructure
-- Deploy on Google Cloud Run
-- Database: Firestore (NoSQL)
-- Pub/Sub for real-time events (future)
-- Environment variables via Cloud Secret Manager
+---
+
+## Business Rules
+
+### Event Management
+1. **Team Ownership & Event Types**
+   - Team owner can register: Score, Missed Shot, Free Throw, Foul, Substitution for their team
+   - Opponent can register: Score, Missed Shot, and Free Throw for opponent team
+   - Non-participants cannot register any events
+
+2. **Shot Coordinates Requirement**
+   - Score events (made shots) MUST include coordinates (x, y)
+   - Missed shot events MUST include coordinates (x, y)
+   - Free throws do NOT require coordinates (arremessos da linha de lance)
+   - Coordinates represent position on court where shot was attempted
+   - User selects position on visual court image (UI component)
+   - Only coordinates {x, y} stored in database (NOT the image)
+   - Coordinates used to generate player heat maps showing:
+     - Made shots (successful attempts)
+     - Missed shots (failed attempts)
+     - Overall shooting patterns
+
+3. **Free Throw Rules (FIBA)**
+   - Award 1, 2, or 3 free throws based on foul type:
+     - Personal foul (no bonus): 1 free throw
+     - Personal foul (team bonus - 4+ fouls): 2 free throws
+     - Technical foul: 1 free throw
+     - Flagrant foul: 2 free throws + ball possession
+   - Each free throw: 1 point (made) or 0 points (missed)
+   - Tracked separately: made free throws vs missed free throws
+   - NO coordinates (linha de lance is fixed position)
+
+4. **Period & Time Tracking**
+   - Match consists of 4 periods (10 minutes each in FIBA)
+   - Each period has: number, startTime, endTime
+   - Each event includes:
+     - Absolute timestamp (when event occurred)
+     - Period number (1-4)
+     - Period timestamp (time within period in seconds)
+   - Period timestamps used to:
+     - Generate score evolution graphs (points over time)
+     - Analyze performance by period
+     - Create timeline visualizations
+   - Validate periodTimestamp is within period duration
+
+5. **Match Lifecycle**
+   - Scheduled → Active → Finished (valid state transitions)
+   - Events can only be added to Active matches
+   - Cannot add events to Finished matches
 
 ---
 
