@@ -1,70 +1,70 @@
-# Basket Stats - Guia de IA
+# Basket Stats - AI Guide
 
-## Visão Geral do Projeto
+## Project Overview
 
-**Basket Stats** é um projeto para análise e visualização de estatísticas de basquete.
+**Basket Stats** is a project for analyzing and visualizing basketball statistics.
 
-### Objetivos
-- Coletar dados de jogadores e equipes
-- Calcular e armazenar estatísticas
-- Fornecer visualizações e relatórios
+### Objectives
+- Collect player and team data
+- Calculate and store statistics
+- Provide visualizations and reports
 
 ---
 
-## Diretrizes para Assistentes de IA
+## AI Assistant Guidelines
 
-### Quando Precisar de Clarificação
-- Escopo de features: quais funcionalidades estão incluídas?
-- Decisões de design: qual abordagem preferível?
-- Estrutura de dados: como os dados devem ser organizados?
-- Dependências externas: quais bibliotecas/APIs usar?
+### When Clarification Is Needed
+- Feature scope: which functionalities are included?
+- Design decisions: which approach is preferable?
+- Data structure: how should data be organized?
+- External dependencies: which libraries/APIs to use?
 
-### Padrões de Código
-- Manter código simples e legível
-- Adicionar comentários apenas quando necessário
-- Usar nomenclatura descritiva
-- Seguir convenções do projeto
+### Code Patterns
+- Keep code simple and readable
+- Add comments only when necessary
+- Use descriptive naming
+- Follow project conventions
 
 ### Workflow
-1. **Explorar**: Entender a estrutura e contexto
-2. **Planejar**: Criar um plano estruturado (se necessário)
-3. **Implementar**: Fazer mudanças mínimas e precisas
-4. **Validar**: Testar mudanças para garantir que funcionam
+1. **Explore**: Understand structure and context
+2. **Plan**: Create a structured plan (if needed)
+3. **Implement**: Make minimal and precise changes
+4. **Validate**: Test changes to ensure they work
 
-### Checklist para Mudanças
-- [ ] Mudanças são mínimas e focadas?
-- [ ] Código segue o padrão do projeto?
-- [ ] Testes passam (se houver)?
-- [ ] Documentação foi atualizada?
+### Change Checklist
+- [ ] Are changes minimal and focused?
+- [ ] Does code follow project standards?
+- [ ] Do tests pass (if any)?
+- [ ] Has documentation been updated?
 
 ---
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 basket-stats/
-├── claude.md                # Este arquivo
-├── src/                     # Código fonte (quando criado)
-├── tests/                   # Testes (quando criado)
-├── docs/                    # Documentação (quando criado)
-└── package.json             # Metadados do projeto (quando criado)
+├── claude.md                # This file
+├── src/                     # Source code (when created)
+├── tests/                   # Tests (when created)
+├── docs/                    # Documentation (when created)
+└── project.csproj           # Project metadata (when created)
 ```
 
 ---
 
-## Stack Tecnológico
+## Technology Stack
 
 ### Backend
 - **Runtime**: .NET 8 / C#
 - **Framework**: ASP.NET Core
 - **ORM**: Entity Framework Core
-- **Autenticação**: Keycloak (OpenID Connect)
-- **Infraestrutura**: Google Cloud Platform (Serverless)
+- **Authentication**: Keycloak (OpenID Connect)
+- **Infrastructure**: Google Cloud Platform (Serverless)
   - Cloud Run
   - Cloud Firestore / Datastore
-  - Cloud Pub/Sub (para eventos)
+  - Cloud Pub/Sub (for events)
 
-### Dependências principais
+### Main Dependencies
 - Microsoft.AspNetCore
 - Microsoft.EntityFrameworkCore
 - IdentityModel (OpenID Connect)
@@ -73,47 +73,47 @@ basket-stats/
 
 ---
 
-## MVP - Requisitos
+## MVP - Requirements
 
-### Funcionalidades Principais
-1. **Gestão de Partidas**
-   - Receber dados de novas partidas
-   - Atualizar eventos em tempo real (pontos, faltas, substituições)
-   - Persistir histórico de partidas
+### Main Features
+1. **Match Management**
+   - Receive new match data
+   - Update match events in real-time (scores, fouls, substitutions)
+   - Persist match history
 
-2. **Autenticação e Autorização**
-   - Integração com Keycloak
+2. **Authentication and Authorization**
+   - Keycloak integration
    - Login via OpenID Connect
-   - Autorização baseada em roles (admin, criador de partida, visualizador)
+   - Role-based authorization (admin, match creator, viewer)
 
-3. **API REST**
-   - POST `/matches` - criar partida
-   - PUT `/matches/{id}/events` - adicionar eventos
-   - GET `/matches/{id}` - obter detalhes
-   - GET `/matches` - listar partidas
+3. **REST API**
+   - POST `/matches` - create match
+   - PUT `/matches/{id}/events` - add events
+   - GET `/matches/{id}` - get details
+   - GET `/matches` - list matches
 
-### Estrutura de Dados
+### Data Structure
 - **Match**: id, teams, players, startTime, status, events[]
 - **Event**: timestamp, type (score, foul, substitution), details
 - **User**: id, email, keycloakId, roles[]
 
-### Infraestrutura
-- Deploy em Google Cloud Functions
-- Banco de dados: Firestore (NoSQL)
-- Pubsub para eventos em tempo real (future)
-- Variáveis de ambiente via Cloud Secret Manager
+### Infrastructure
+- Deploy on Google Cloud Run
+- Database: Firestore (NoSQL)
+- Pub/Sub for real-time events (future)
+- Environment variables via Cloud Secret Manager
 
 ---
 
-## Próximas Etapas
-1. Configurar projeto GCP
-2. Implementar base de autenticação com Keycloak
-3. Criar API REST básica
-4. Implementar funcionalidade de partidas
+## Next Steps
+1. Set up GCP project
+2. Implement Keycloak authentication base
+3. Create basic REST API
+4. Implement match functionality
 
 ---
 
-## Contato & Notas
+## Contact & Notes
 
-- Linguagem de Comunicação: Português (PT-BR)
-- Foco: Qualidade e clareza no código
+- Communication Language: English
+- Focus: Code quality and clarity
