@@ -69,7 +69,6 @@ basket-stats/
 - Microsoft.EntityFrameworkCore
 - IdentityModel (OpenID Connect)
 - Google.Cloud.Firestore
-- Google.Cloud.PubSub.V1
 
 ---
 
@@ -94,14 +93,36 @@ basket-stats/
 
 ### Data Structure
 - **Match**: id, teams, players, startTime, status, events[]
-- **Event**: timestamp, type (score, foul, substitution), details
+- **Event**: timestamp, type (score, foul, substitution), details, teamId, playerId
+- **ScoreEvent**: points (2 or 3), coordinates {x, y}, playerName
 - **User**: id, email, keycloakId, roles[]
 
-### Infrastructure
-- Deploy on Google Cloud Run
-- Database: Firestore (NoSQL)
-- Pub/Sub for real-time events (future)
-- Environment variables via Cloud Secret Manager
+---
+
+## Business Rules
+
+### Event Management
+1. **Team Ownership & Event Types**
+   - Team owner can register all event types: Score, Foul, Substitution
+   - Opponent can only register: Score events
+   - Non-participants cannot register any events
+
+2. **Shot Coordinates Requirement**
+   - All score events (2 or 3 points) MUST include shot coordinates
+   - Coordinates represent position on court (x, y) where shot was taken
+   - User selects position on visual court image (UI component)
+   - Only coordinates {x, y} stored in database, NOT the image
+   - Coordinates used to generate player heat maps showing shooting patterns
+   - Reject score events without coordinates
+
+3. **Other Events**
+   - Foul events do NOT require coordinates
+   - Substitution events do NOT require coordinates
+
+4. **Match Lifecycle**
+   - Scheduled → Active → Finished (valid state transitions)
+   - Events can only be added to Active matches
+   - Cannot add events to Finished matches
 
 ---
 

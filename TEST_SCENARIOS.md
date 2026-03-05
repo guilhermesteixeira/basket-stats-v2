@@ -65,11 +65,14 @@ Define comprehensive test scenarios for MVP implementation covering:
 - Opponent can register: Only Score for opponent team
 - Non-participants cannot register any events
 
-#### Shot Image Requirement
+#### Shot Coordinates Requirement
 **KEY REQUIREMENT**: 
-- Score events (2 or 3 points) must include image showing shot location
-- Image used to generate heat map of court
-- Image stored in Google Cloud Storage
+- Score events (2 or 3 points) must include shot coordinates (x, y)
+- Coordinates represent position on court where shot was taken
+- User clicks on visual court image to select position
+- Only coordinates stored in database (NOT the image itself)
+- Coordinates used to generate player heat maps
+- Reject score events without coordinates
 
 #### Add Event
 - TC-EVENT-001: Add score event to own team (authorized)
@@ -79,14 +82,14 @@ Define comprehensive test scenarios for MVP implementation covering:
 - TC-EVENT-008: Deny foul event to opponent team (unauthorized)
 - TC-EVENT-009: Deny substitution to opponent team (unauthorized)
 - TC-EVENT-010: Verify event ownership restrictions enforced
-- TC-EVENT-011: Score event requires image (2-pointer)
-- TC-EVENT-012: Score event requires image (3-pointer)
-- TC-EVENT-013: Reject score without image
-- TC-EVENT-014: Foul event does NOT require image
-- TC-EVENT-015: Substitution does NOT require image
+- TC-EVENT-011: Score event requires coordinates (2-pointer)
+- TC-EVENT-012: Score event requires coordinates (3-pointer)
+- TC-EVENT-013: Reject score without coordinates
+- TC-EVENT-014: Foul event does NOT require coordinates
+- TC-EVENT-015: Substitution does NOT require coordinates
 - TC-EVENT-004: Fail to add event to finished match
 - TC-EVENT-005: Fail to add event to non-existent match
-- TC-EVENT-006: Events stored in correct chronological order
+- TC-EVENT-006: Events stored in chronological order
 
 #### Event Retrieval
 - TC-EVENT-016: Get all events for a match
@@ -94,10 +97,12 @@ Define comprehensive test scenarios for MVP implementation covering:
 - TC-EVENT-018: Events returned in chronological order
 - TC-EVENT-019: Pagination support for large event lists
 
-#### Image Storage
-- TC-EVENT-020: Upload image to Cloud Storage successfully
-- TC-EVENT-021: Generate image URL for shot location
-- TC-EVENT-022: Image validation (format, size)
+#### Coordinate Storage
+- TC-EVENT-020: Store shot coordinates (x, y) in database
+- TC-EVENT-021: Coordinates in valid court range (0-100)
+- TC-EVENT-022: Generate heat map from multiple shot coordinates
+- TC-EVENT-023: Filter heat map by player
+- TC-EVENT-024: Filter heat map by team
 
 ---
 
