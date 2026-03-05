@@ -21,11 +21,9 @@ services:
       start_period: 30s
 
   # Firestore Emulator - Database
-  # Using Google Cloud CLI image with Firestore emulator
   firestore-emulator:
-    image: google/cloud-cli:emulators
+    image: mtlynch/firestore-emulator:latest
     container_name: basket-stats-firestore
-    entrypoint: gcloud beta emulators firestore start --host-port=0.0.0.0:8081
     ports:
       - "8081:8081"
     environment:
