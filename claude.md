@@ -92,8 +92,9 @@ basket-stats/
    - GET `/matches` - list matches
 
 ### Data Structure
-- **Match**: id, teams, players, startTime, status, events[], teamFouls[] (per period)
-- **Event**: timestamp, type (score, missed_shot, free_throw, foul, substitution), details, teamId, playerId
+- **Match**: id, teams, players, startTime, status, events[], periods[] (per-period data), teamFouls[] (per period)
+- **Period**: number (1-4), quarterStartTime, quarterEndTime, duration (in seconds)
+- **Event**: timestamp (absolute), periodNumber, periodTimestamp (time within period in seconds), type (score, missed_shot, free_throw, foul, substitution), details, teamId, playerId
 - **ScoreEvent**: points (2 or 3), coordinates {x, y}, playerName
 - **MissedShotEvent**: coordinates {x, y}, playerName
 - **FreeThrowEvent**: made (boolean), foulType (personal, technical, flagrant), playerName
@@ -132,9 +133,18 @@ basket-stats/
    - Tracked separately: made free throws vs missed free throws
    - NO coordinates (linha de lance is fixed position)
 
-4. **Other Events**
-   - Foul events do NOT require coordinates
-   - Substitution events do NOT require coordinates
+4. **Period & Time Tracking**
+   - Match consists of 4 periods (10 minutes each in FIBA)
+   - Each period has: number, startTime, endTime
+   - Each event includes:
+     - Absolute timestamp (when event occurred)
+     - Period number (1-4)
+     - Period timestamp (time within period in seconds)
+   - Period timestamps used to:
+     - Generate score evolution graphs (points over time)
+     - Analyze performance by period
+     - Create timeline visualizations
+   - Validate periodTimestamp is within period duration
 
 5. **Match Lifecycle**
    - Scheduled → Active → Finished (valid state transitions)

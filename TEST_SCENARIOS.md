@@ -65,7 +65,19 @@ Define comprehensive test scenarios for MVP implementation covering:
 - Opponent can register: Score, Missed Shot, and Free Throw for opponent team
 - Non-participants cannot register any events
 
-#### Free Throw Requirements (FIBA)
+#### Period & Timestamp Requirements
+**KEY REQUIREMENT**:
+- Match has 4 periods (10 minutes each - FIBA standard)
+- Each period tracked: number, startTime, endTime
+- Each event MUST include:
+  - Absolute timestamp (when event occurred)
+  - Period number (1-4)
+  - Period timestamp (seconds within period, 0-600s)
+- Period timestamp used for:
+  - Score evolution graphs (points per period)
+  - Performance analysis by quarter
+  - Timeline visualizations
+- Reject events with invalid period timestamps (outside 0-600s range)
 **KEY REQUIREMENT**:
 - Free throw events based on foul type:
   - Personal foul (no bonus): 1 free throw
@@ -141,6 +153,17 @@ Define comprehensive test scenarios for MVP implementation covering:
 - TC-EVENT-043: Generate combined heat map (made + missed)
 - TC-EVENT-044: Filter heat map by player
 - TC-EVENT-045: Filter heat map by team
+
+#### Period & Timeline Tests
+- TC-EVENT-046: Record event with correct absolute timestamp
+- TC-EVENT-047: Record event with period number (1-4)
+- TC-EVENT-048: Record event with period timestamp (seconds within period)
+- TC-EVENT-049: Period timestamp must be within 0-600s range
+- TC-EVENT-050: Reject event with invalid period timestamp
+- TC-EVENT-051: Reject event with invalid period number (>4)
+- TC-EVENT-052: Generate score evolution graph by period
+- TC-EVENT-053: Show points scored per quarter timeline
+- TC-EVENT-054: Display points over time during match
 
 ---
 
