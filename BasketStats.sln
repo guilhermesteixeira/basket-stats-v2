@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.0.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8F8D8B0-C5A1-4F2B-B8E4-6D9C2A1F3E7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F9G9E9C1-D6B2-5G3C-C9F5-7E0D3B2G4F8C}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasketStats.API", "src\BasketStats.API\BasketStats.API.csproj", "{1E3A8B3F-5C8A-4B9F-8D2E-7A6C5B3D1F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasketStats.API.Tests", "tests\BasketStats.API.Tests\BasketStats.API.Tests.csproj", "{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,5 +21,13 @@ Global
 		{1E3A8B3F-5C8A-4B9F-8D2E-7A6C5B3D1F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E3A8B3F-5C8A-4B9F-8D2E-7A6C5B3D1F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E3A8B3F-5C8A-4B9F-8D2E-7A6C5B3D1F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1E3A8B3F-5C8A-4B9F-8D2E-7A6C5B3D1F9E} = {E8F8D8B0-C5A1-4F2B-B8E4-6D9C2A1F3E7B}
+		{2F4B9C4F-6D9B-5C0G-9E3F-8B7D6C4E2G0F} = {F9G9E9C1-D6B2-5G3C-C9F5-7E0D3B2G4F8C}
 	EndGlobalSection
 EndGlobal
