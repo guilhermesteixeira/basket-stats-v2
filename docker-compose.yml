@@ -58,28 +58,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # PostgreSQL - Optional backup/cache database
-  postgres:
-    image: postgres:15-alpine
-    container_name: basket-stats-postgres
-    environment:
-      POSTGRES_DB: basket_stats
-      POSTGRES_USER: basket_user
-      POSTGRES_PASSWORD: basket_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - basket-stats-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U basket_user -d basket_stats"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres-data:
+volumes: {}
 
 networks:
   basket-stats-network:

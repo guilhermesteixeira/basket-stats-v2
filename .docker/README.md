@@ -22,12 +22,6 @@ This docker-compose file sets up all development dependencies:
 - In-memory backend
 - Endpoint: `http://localhost:4443`
 
-### 4. **PostgreSQL** (Port 5432)
-- Optional relational database
-- Can be used for caching or backup
-- Credentials: `basket_user` / `basket_password`
-- Database: `basket_stats`
-
 ## Getting Started
 
 ### Start all services
