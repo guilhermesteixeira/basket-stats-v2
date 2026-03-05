@@ -55,13 +55,21 @@ basket-stats/
 ## Stack Tecnológico
 
 ### Backend
-- **Runtime**: Node.js / TypeScript
-- **Framework**: Express.js ou Cloud Functions
+- **Runtime**: .NET 8 / C#
+- **Framework**: ASP.NET Core
+- **ORM**: Entity Framework Core
 - **Autenticação**: Keycloak (OpenID Connect)
 - **Infraestrutura**: Google Cloud Platform (Serverless)
-  - Cloud Functions
+  - Cloud Run
   - Cloud Firestore / Datastore
   - Cloud Pub/Sub (para eventos)
+
+### Dependências principais
+- Microsoft.AspNetCore
+- Microsoft.EntityFrameworkCore
+- IdentityModel (OpenID Connect)
+- Google.Cloud.Firestore
+- Google.Cloud.PubSub.V1
 
 ---
 
