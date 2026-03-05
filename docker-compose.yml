@@ -30,6 +30,7 @@ services:
       FIRESTORE_PROJECT_ID: basket-stats-dev
     networks:
       - basket-stats-network
+    platform: linux/amd64
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081"]
       interval: 15s
