@@ -92,10 +92,12 @@ basket-stats/
    - GET `/matches` - list matches
 
 ### Data Structure
-- **Match**: id, teams, players, startTime, status, events[]
-- **Event**: timestamp, type (score, missed_shot, foul, substitution), details, teamId, playerId
+- **Match**: id, teams, players, startTime, status, events[], teamFouls[] (per period)
+- **Event**: timestamp, type (score, missed_shot, free_throw, foul, substitution), details, teamId, playerId
 - **ScoreEvent**: points (2 or 3), coordinates {x, y}, playerName
 - **MissedShotEvent**: coordinates {x, y}, playerName
+- **FreeThrowEvent**: made (boolean), foulType (personal, technical, flagrant), playerName
+- **FoulEvent**: foulType, playerFouled, flagrant (boolean)
 - **User**: id, email, keycloakId, roles[]
 
 ---
@@ -104,13 +106,14 @@ basket-stats/
 
 ### Event Management
 1. **Team Ownership & Event Types**
-   - Team owner can register: Score, Missed Shot, Foul, Substitution for their team
-   - Opponent can register: Score and Missed Shot for opponent team
+   - Team owner can register: Score, Missed Shot, Free Throw, Foul, Substitution for their team
+   - Opponent can register: Score, Missed Shot, and Free Throw for opponent team
    - Non-participants cannot register any events
 
 2. **Shot Coordinates Requirement**
    - Score events (made shots) MUST include coordinates (x, y)
    - Missed shot events MUST include coordinates (x, y)
+   - Free throws do NOT require coordinates (arremessos da linha de lance)
    - Coordinates represent position on court where shot was attempted
    - User selects position on visual court image (UI component)
    - Only coordinates {x, y} stored in database (NOT the image)
@@ -118,13 +121,22 @@ basket-stats/
      - Made shots (successful attempts)
      - Missed shots (failed attempts)
      - Overall shooting patterns
-   - Reject score/missed shot events without coordinates
 
-3. **Other Events**
+3. **Free Throw Rules (FIBA)**
+   - Award 1, 2, or 3 free throws based on foul type:
+     - Personal foul (no bonus): 1 free throw
+     - Personal foul (team bonus - 4+ fouls): 2 free throws
+     - Technical foul: 1 free throw
+     - Flagrant foul: 2 free throws + ball possession
+   - Each free throw: 1 point (made) or 0 points (missed)
+   - Tracked separately: made free throws vs missed free throws
+   - NO coordinates (linha de lance is fixed position)
+
+4. **Other Events**
    - Foul events do NOT require coordinates
    - Substitution events do NOT require coordinates
 
-4. **Match Lifecycle**
+5. **Match Lifecycle**
    - Scheduled → Active → Finished (valid state transitions)
    - Events can only be added to Active matches
    - Cannot add events to Finished matches
