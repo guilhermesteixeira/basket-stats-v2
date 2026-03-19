@@ -1,0 +1,49 @@
+.gitignore for Basket Stats .NET project
+
+## Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+*.code-workspace
+
+## Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+
+## NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+## Local development
+appsettings.local.json
+.env
+.env.local
+launchSettings.json
+
+## Logs
+*.log
+logs/
+
+## Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+
+## Test results
+TestResults/
+*.trx

@@ -41,34 +41,90 @@
 
 ## Project Structure
 
+### Directory Layout
 ```
 basket-stats/
-├── claude.md                # This file
-├── src/                     # Source code (when created)
-├── tests/                   # Tests (when created)
-├── docs/                    # Documentation (when created)
-└── project.csproj           # Project metadata (when created)
+├── src/
+│   ├── BasketStats.API/              # Presentation Layer
+│   ├── BasketStats.Application/      # Application Layer (CQS)
+│   ├── BasketStats.Domain/           # Domain Layer
+│   └── BasketStats.Infrastructure/   # Infrastructure Layer
+├── tests/
+│   └── Unit/
+│       ├── BasketStats.API.Tests/
+│       ├── BasketStats.Application.Tests/
+│       ├── BasketStats.Domain.Tests/
+│       └── BasketStats.Infrastructure.Tests/
+├── claude.md
+├── BasketStats.sln
+└── docker-compose.yml
 ```
+
+### Architecture Layers
+
+#### Domain Layer (`BasketStats.Domain`)
+- **Entities**: Match, Event, User, Team
+- **Value Objects**: MatchId, EventId, Coordinates, Period, Score
+- **Repository Interfaces**: IMatchRepository, IEventRepository, IUserRepository
+- **Business Rules**: Event validation, free throw calculation, period logic
+- **No external dependencies** (no frameworks, no NuGet packages)
+
+#### Application Layer (`BasketStats.Application`)
+- **Commands**: CreateMatchCommand, AddEventCommand, UpdateMatchStatus
+- **Queries**: GetMatchQuery, ListMatchesQuery, GetPlayerStatsQuery
+- **Command/Query Handlers**: Implement use cases using MediatR
+- **DTOs**: Application-level data transfer objects
+- **Services**: Business logic orchestration
+
+#### Infrastructure Layer (`BasketStats.Infrastructure`)
+- **Repository Implementations**: Firestore-based repositories
+- **Data Mappers**: Domain entity ↔ Firestore document mapping
+- **External Services**: Keycloak authentication adapter, GCS integration
+- **Firebase/Firestore Configuration**: Collection definitions, indexes
+
+#### Presentation Layer (`BasketStats.API`)
+- **Controllers**: Thin controllers delegating to MediatR
+- **API DTOs**: Request/Response contracts
+- **Middleware**: Authentication, CORS, error handling
+- **Program.cs**: Dependency injection and service configuration
+- **Swagger/OpenAPI**: API documentation
 
 ---
 
 ## Technology Stack
 
-### Backend
-- **Runtime**: .NET 8 / C#
-- **Framework**: ASP.NET Core
-- **ORM**: Entity Framework Core
-- **Authentication**: Keycloak (OpenID Connect)
-- **Infrastructure**: Google Cloud Platform (Serverless)
-  - Cloud Run
-  - Cloud Firestore / Datastore
-  - Cloud Pub/Sub (for events)
+### Backend Architecture
+- **Pattern**: Clean Architecture with CQS (Command Query Separation)
+- **Framework**: ASP.NET Core 10
+- **Language**: C# 13
+- **Database**: Google Cloud Firestore (NoSQL)
+- **Authentication**: Keycloak (OpenID Connect + JWT)
+- **CQS Library**: MediatR (for command/query pattern)
 
-### Main Dependencies
-- Microsoft.AspNetCore
-- Microsoft.EntityFrameworkCore
-- IdentityModel (OpenID Connect)
-- Google.Cloud.Firestore
+### Project Structure
+- **BasketStats.Domain**: Core business logic (DDD - Domain-Driven Design)
+- **BasketStats.Application**: Use cases and CQS handlers (orchestration)
+- **BasketStats.Infrastructure**: Data access and external integrations
+- **BasketStats.API**: HTTP presentation layer and REST endpoints
+
+### Key Dependencies
+- **MediatR** (v13.0.0): CQS pattern implementation
+- **Microsoft.AspNetCore.Authentication.OpenIdConnect**: Keycloak integration
+- **Microsoft.AspNetCore.Authentication.JwtBearer**: JWT token validation
+- **Google.Cloud.Firestore**: Firestore database client
+- **Google.Cloud.Storage.V1**: Cloud Storage integration
+- **Serilog**: Structured logging
+- **FluentValidation**: Input validation
+- **xUnit + Moq**: Unit testing
+- **Swashbuckle.AspNetCore**: Swagger/OpenAPI documentation
+
+### Infrastructure
+- **Keycloak**: Authentication and authorization (OAuth2/OpenID Connect)
+- **Google Cloud Platform**:
+  - Cloud Firestore: Document-oriented database
+  - Cloud Run: Serverless API hosting
+  - Cloud Storage: File storage
+- **Docker**: Local development environment (Keycloak, Firestore Emulator, GCS Emulator)
 
 ---
 
@@ -164,10 +220,28 @@ basket-stats/
 ---
 
 ## Next Steps
-1. Set up GCP project
-2. Implement Keycloak authentication base
-3. Create basic REST API
-4. Implement match functionality
+
+### Immediate (Phase 1-2)
+1. Create Domain, Application, Infrastructure class libraries
+2. Add MediatR NuGet packages
+3. Create domain entities and value objects
+4. Define repository interfaces
+
+### Short Term (Phase 3-4)
+5. Implement command and query handlers
+6. Create Firestore repository implementations
+7. Configure dependency injection
+
+### Medium Term (Phase 5-6)
+8. Refactor controllers to use CQS
+9. Add comprehensive tests
+10. Update API documentation
+
+### Long Term
+11. Add integration tests with Firestore emulator
+12. Implement caching strategy
+13. Add event sourcing (future enhancement)
+14. Implement saga pattern for complex workflows (if needed)
 
 ---
 
