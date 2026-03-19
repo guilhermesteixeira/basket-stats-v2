@@ -18,6 +18,7 @@ public class StartMatchCommandHandlerTests
     [Fact]
     public async Task Handle_ScheduledMatch_StartsMatch()
     {
+        // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
 
@@ -26,8 +27,11 @@ public class StartMatchCommandHandlerTests
         _matchRepo.Setup(r => r.SaveAsync(match, default)).Returns(Task.CompletedTask);
 
         var command = new StartMatchCommand(match.Id.Value, "user-1");
+
+        // Act
         await CreateHandler().Handle(command, default);
 
+        // Assert
         Assert.Equal(Domain.Enums.MatchStatus.Active, match.Status);
         _matchRepo.Verify(r => r.SaveAsync(match, default), Times.Once);
     }
@@ -35,16 +39,20 @@ public class StartMatchCommandHandlerTests
     [Fact]
     public async Task Handle_MatchNotFound_ThrowsNotFoundException()
     {
+        // Arrange
         _matchRepo.Setup(r => r.GetByIdAsync("no-match", default)).ReturnsAsync((DomainMatch?)null);
 
         var command = new StartMatchCommand("no-match", "user-1");
 
+        // Assert
         await Assert.ThrowsAsync<NotFoundException>(() => CreateHandler().Handle(command, default));
     }
 
+    // TC-MATCH-012: Fail to update with invalid status transition
     [Fact]
     public async Task Handle_ActiveMatch_ThrowsInvalidOperationException()
     {
+        // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         match.Start(); // already active
         var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
@@ -54,6 +62,7 @@ public class StartMatchCommandHandlerTests
 
         var command = new StartMatchCommand(match.Id.Value, "user-1");
 
+        // Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler().Handle(command, default));
     }
 }

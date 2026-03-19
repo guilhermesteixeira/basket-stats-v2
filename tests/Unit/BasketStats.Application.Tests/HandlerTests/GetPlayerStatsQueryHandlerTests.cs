@@ -16,6 +16,7 @@ public class GetPlayerStatsQueryHandlerTests
     [Fact]
     public async Task Handle_ExistingPlayerWithEvents_ReturnsCorrectStats()
     {
+        // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         match.Start();
 
@@ -35,8 +36,10 @@ public class GetPlayerStatsQueryHandlerTests
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
 
+        // Act
         var result = await CreateHandler().Handle(new GetPlayerStatsQuery(match.Id.Value, "player-1"), default);
 
+        // Assert
         Assert.NotNull(result);
         Assert.Equal(6, result.TotalPoints);  // 2 + 3 + 1
         Assert.Equal(1, result.FreeThrowsMade);
@@ -49,10 +52,61 @@ public class GetPlayerStatsQueryHandlerTests
     [Fact]
     public async Task Handle_MatchNotFound_ReturnsNull()
     {
+        // Arrange
         _matchRepo.Setup(r => r.GetByIdAsync("no-match", default)).ReturnsAsync((DomainMatch?)null);
 
+        // Act
         var result = await CreateHandler().Handle(new GetPlayerStatsQuery("no-match", "player-1"), default);
 
+        // Assert
         Assert.Null(result);
+    }
+
+    // TC-EVENT-028: Made free throw counts as 1 point for player stats
+    [Fact]
+    public async Task Handle_PlayerWithMadeFreeThrow_CountsOnePoint()
+    {
+        // Arrange
+        var match = DomainMatch.Create("home-1", "away-1");
+        match.Start();
+
+        var ftMade = new FreeThrowEvent("home-1", "player-1", true,
+            Domain.Enums.FoulType.Personal, PeriodNumber.One, 60);
+        match.AddEvent(ftMade);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
+
+        // Act
+        var result = await CreateHandler().Handle(new GetPlayerStatsQuery(match.Id.Value, "player-1"), default);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalPoints);
+        Assert.Equal(1, result.FreeThrowsMade);
+        Assert.Equal(0, result.FreeThrowsMissed);
+    }
+
+    // TC-EVENT-029: Missed free throw counts as 0 points for player stats
+    [Fact]
+    public async Task Handle_PlayerWithMissedFreeThrow_CountsZeroPoints()
+    {
+        // Arrange
+        var match = DomainMatch.Create("home-1", "away-1");
+        match.Start();
+
+        var ftMissed = new FreeThrowEvent("home-1", "player-1", false,
+            Domain.Enums.FoulType.Personal, PeriodNumber.One, 60);
+        match.AddEvent(ftMissed);
+
+        _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
+
+        // Act
+        var result = await CreateHandler().Handle(new GetPlayerStatsQuery(match.Id.Value, "player-1"), default);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(0, result.TotalPoints);
+        Assert.Equal(0, result.FreeThrowsMade);
+        Assert.Equal(1, result.FreeThrowsMissed);
     }
 }

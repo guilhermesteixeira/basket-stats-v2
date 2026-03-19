@@ -15,6 +15,7 @@ public class ListMatchesQueryHandlerTests
     [Fact]
     public async Task Handle_NoFilters_ReturnsAllMatches()
     {
+        // Arrange
         var matches = new List<DomainMatch>
         {
             DomainMatch.Create("home-1", "away-1"),
@@ -22,34 +23,44 @@ public class ListMatchesQueryHandlerTests
         };
         _matchRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(matches);
 
+        // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(), default);
 
+        // Assert
         Assert.Equal(2, result.Count);
     }
 
+    // TC-MATCH-009: Filter matches by team
     [Fact]
     public async Task Handle_TeamIdFilter_CallsGetByTeam()
     {
+        // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         _matchRepo.Setup(r => r.GetByTeamAsync("home-1", default)).ReturnsAsync(new List<DomainMatch> { match });
 
+        // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(TeamId: "home-1"), default);
 
+        // Assert
         Assert.Single(result);
         _matchRepo.Verify(r => r.GetByTeamAsync("home-1", default), Times.Once);
     }
 
+    // TC-MATCH-010: Filter matches by status
     [Fact]
     public async Task Handle_StatusFilter_ReturnsOnlyMatchingMatches()
     {
+        // Arrange
         var scheduled = DomainMatch.Create("home-1", "away-1");
         var active = DomainMatch.Create("home-2", "away-2");
         active.Start();
 
         _matchRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(new List<DomainMatch> { scheduled, active });
 
+        // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(Status: MatchStatus.Active), default);
 
+        // Assert
         Assert.Single(result);
         Assert.Equal("Active", result[0].Status);
     }
