@@ -1,4 +1,4 @@
-namespace BasketStats.Infrastructure.Tests.Integration;
+namespace BasketStats.Integration.Tests;
 
 using Google.Api.Gax;
 using Google.Cloud.Firestore;

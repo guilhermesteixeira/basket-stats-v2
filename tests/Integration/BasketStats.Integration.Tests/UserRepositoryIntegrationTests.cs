@@ -1,4 +1,4 @@
-namespace BasketStats.Infrastructure.Tests.Integration;
+namespace BasketStats.Integration.Tests;
 
 using BasketStats.Domain.Entities;
 using BasketStats.Infrastructure.Repositories;
