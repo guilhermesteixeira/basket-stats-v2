@@ -1,5 +1,6 @@
 using BasketStats.Domain.Abstractions;
 using BasketStats.Infrastructure.Repositories;
+using Google.Api.Gax;
 using Google.Cloud.Firestore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,11 +16,17 @@ public static class DependencyInjection
         services.AddSingleton(_ =>
         {
             var emulatorHost = configuration["Firestore:EmulatorHost"];
-            if (!string.IsNullOrEmpty(emulatorHost))
-            {
+            var useEmulator = !string.IsNullOrEmpty(emulatorHost);
+
+            if (useEmulator)
                 Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", emulatorHost);
-            }
-            return FirestoreDb.Create(projectId);
+            return new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                EmulatorDetection = useEmulator
+                    ? EmulatorDetection.EmulatorOnly
+                    : EmulatorDetection.None
+            }.Build();
         });
 
         services.AddScoped<IMatchRepository, FirestoreMatchRepository>();
