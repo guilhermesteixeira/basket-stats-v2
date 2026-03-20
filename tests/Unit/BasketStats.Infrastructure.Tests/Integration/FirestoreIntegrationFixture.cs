@@ -1,5 +1,6 @@
 namespace BasketStats.Infrastructure.Tests.Integration;
 
+using Google.Api.Gax;
 using Google.Cloud.Firestore;
 
 public class FirestoreIntegrationFixture : IAsyncLifetime
@@ -15,7 +16,11 @@ public class FirestoreIntegrationFixture : IAsyncLifetime
         try
         {
             Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", emulatorHost);
-            FirestoreDb = await FirestoreDb.CreateAsync(ProjectId);
+            FirestoreDb = new FirestoreDbBuilder
+            {
+                ProjectId = ProjectId,
+                EmulatorDetection = EmulatorDetection.EmulatorOnly
+            }.Build();
             // Quick connectivity check
             await FirestoreDb.Collection("_health").Document("check").GetSnapshotAsync();
             IsAvailable = true;
