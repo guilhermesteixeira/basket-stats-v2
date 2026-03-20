@@ -2,6 +2,7 @@ namespace BasketStats.API.Controllers;
 
 using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BasketStats.API.Requests;
 using BasketStats.Application.Commands;
@@ -9,6 +10,7 @@ using BasketStats.Application.Exceptions;
 using BasketStats.Application.Queries;
 using BasketStats.Domain.Enums;
 
+[Authorize]
 [ApiController]
 [Route("api/matches")]
 public class MatchesController(IMediator mediator) : ControllerBase
@@ -22,6 +24,7 @@ public class MatchesController(IMediator mediator) : ControllerBase
         return CreatedAtAction(nameof(GetMatch), new { id = matchId }, new { id = matchId });
     }
 
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetMatch(string id, CancellationToken ct)
     {
@@ -29,6 +32,7 @@ public class MatchesController(IMediator mediator) : ControllerBase
         return matchDto is null ? NotFound() : Ok(matchDto);
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> ListMatches([FromQuery] string? teamId, [FromQuery] MatchStatus? status, CancellationToken ct)
     {
