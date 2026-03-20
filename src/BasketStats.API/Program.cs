@@ -2,6 +2,7 @@ using System.Security.Claims;
 using BasketStats.Application;
 using BasketStats.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -17,9 +18,39 @@ try
         .WriteTo.Console());
 
     builder.Services.AddControllers();
-    builder.Services.AddOpenApi();
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "BasketStats API",
+            Version = "v1",
+            Description = "API for managing basketball match statistics"
+        });
+
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter your JWT token"
+        };
+        options.AddSecurityDefinition("Bearer", securityScheme);
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                },
+                []
+            }
+        });
+    });
 
     // JWT Bearer Authentication (Keycloak)
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -44,7 +75,10 @@ try
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
-        app.MapOpenApi();
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "BasketStats API v1"));
+    }
 
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
