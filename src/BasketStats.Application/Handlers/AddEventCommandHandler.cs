@@ -22,15 +22,15 @@ public class AddEventCommandHandler(
         if (match.Status != Domain.Enums.MatchStatus.Active)
             throw new InvalidOperationException("Cannot add events to a non-active match");
 
-        var user = await userRepository.GetByIdAsync(request.RequestedByUserId, cancellationToken);
+        var user = await userRepository.GetByKeycloakIdAsync(request.RequestedByUserId, cancellationToken);
         if (user is null)
             throw new NotFoundException($"User '{request.RequestedByUserId}' not found");
 
         var homeTeam = await teamRepository.GetByIdAsync(match.HomeTeamId, cancellationToken);
         var awayTeam = await teamRepository.GetByIdAsync(match.AwayTeamId, cancellationToken);
 
-        var isHomeOwner = homeTeam?.IsOwnedBy(request.RequestedByUserId) ?? false;
-        var isAwayOwner = awayTeam?.IsOwnedBy(request.RequestedByUserId) ?? false;
+        var isHomeOwner = homeTeam?.IsOwnedBy(user.Id) ?? false;
+        var isAwayOwner = awayTeam?.IsOwnedBy(user.Id) ?? false;
 
         bool isAuthorized = false;
 

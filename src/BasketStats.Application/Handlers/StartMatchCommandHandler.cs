@@ -15,7 +15,7 @@ public class StartMatchCommandHandler(
         if (match is null)
             throw new NotFoundException($"Match '{request.MatchId}' not found");
 
-        var user = await userRepository.GetByIdAsync(request.RequestedByUserId, cancellationToken);
+        var user = await userRepository.GetByKeycloakIdAsync(request.RequestedByUserId, cancellationToken);
         if (user is null)
             throw new NotFoundException($"User '{request.RequestedByUserId}' not found");
 

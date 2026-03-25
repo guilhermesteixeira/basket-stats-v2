@@ -12,12 +12,12 @@ public class CreateTeamCommandHandler(
 {
     public async Task<string> Handle(CreateTeamCommand request, CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(request.RequestedByUserId, cancellationToken);
+        var user = await userRepository.GetByKeycloakIdAsync(request.RequestedByUserId, cancellationToken);
         if (user is null)
             throw new NotFoundException($"User '{request.RequestedByUserId}' not found");
 
         var teamId = Guid.NewGuid().ToString();
-        var team = Team.Create(teamId, request.Name, request.RequestedByUserId);
+        var team = Team.Create(teamId, request.Name, user.Id);
         await teamRepository.SaveAsync(team, cancellationToken);
 
         return team.Id;

@@ -21,7 +21,7 @@ public class CreateMatchCommandHandler(
         if (awayTeam is null)
             throw new NotFoundException($"Away team '{request.AwayTeamId}' not found");
 
-        var user = await userRepository.GetByIdAsync(request.RequestedByUserId, cancellationToken);
+        var user = await userRepository.GetByKeycloakIdAsync(request.RequestedByUserId, cancellationToken);
         if (user is null)
             throw new NotFoundException($"User '{request.RequestedByUserId}' not found");
 
