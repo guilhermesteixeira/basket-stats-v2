@@ -254,24 +254,24 @@ services.AddApiServices();
 
 ## Testing Strategy
 
-### Domain Tests (`BasketStats.Domain.Tests`)
-- Entity creation and validation
-- Business rule enforcement
-- Value object equality
+### Unit Tests
 
-### Application Tests (`BasketStats.Application.Tests`)
-- Command handlers (mocking repositories)
-- Query handlers (mocking repositories)
-- Handler validation
+| Project | Tests | Focus |
+|---|---|---|
+| `BasketStats.Domain.Tests` | 88 | Entity creation/validation, business rules, value object equality |
+| `BasketStats.Application.Tests` | 51 | Command/query handlers (mocked repositories) |
+| `BasketStats.API.Tests` | 14 | Controller layer, request/response mapping |
+| `BasketStats.Infrastructure.Tests` | 19 | Firestore mapper conversions |
 
-### Infrastructure Tests (`BasketStats.Infrastructure.Tests`)
-- Repository implementations (with Firestore emulator)
-- Data mapper conversions
+### Integration Tests (`BasketStats.Integration.Tests`)
+- Repository implementations against Firestore emulator
+- Requires `docker-compose up`
 
-### Integration Tests (`BasketStats.API.Tests`)
-- Full request/response cycles
-- Authentication flow
-- Error handling
+### Frontend Tests (planned — `frontend/`)
+- **Unit/Component**: Vitest + React Testing Library
+- **E2E**: Playwright (optional future addition)
+
+See `TEST_SCENARIOS.md` for full scenario catalogue.
 
 ## Data Flow Example: Create Match
 
@@ -381,6 +381,49 @@ src/BasketStats.API/
 - Clean Architecture: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 - CQS Pattern: https://martinfowler.com/bliki/CommandQuerySeparation.html
 - Domain-Driven Design: https://www.domainlanguage.com/ddd/
+
+---
+
+## Frontend Architecture
+
+> See `FRONTEND.md` for the full frontend setup and plan.
+
+The React frontend is a **separate application** (`frontend/`) that communicates with the backend exclusively via REST API. It has no knowledge of the backend's internal structure.
+
+```
+┌──────────────────────────────────────────┐
+│   React Frontend (Vite + React 19)        │
+│   Tailwind CSS · TanStack Query · Zustand │
+│   Keycloak JS · React Router              │
+└──────────────────┬───────────────────────┘
+                   │ HTTP / REST (JWT Bearer)
+                   ↓
+┌──────────────────────────────────────────┐
+│   BasketStats.API  (ASP.NET Core 10)      │
+│   Swagger: http://localhost:5273/swagger  │
+└──────────────────────────────────────────┘
+```
+
+### Screens (MVP)
+
+| Screen | Route | Description |
+|---|---|---|
+| Login | `/login` | Keycloak-delegated authentication |
+| Team Registration | `/teams/new` | Create a team (authenticated) |
+| Match List | `/` | List all matches with status filter |
+| Live Event Recording | `/matches/:id/live` | Add events in real-time (owner/opponent) |
+| Match Statistics | `/matches/:id/stats` | Score timeline, foul counts, player heat map |
+
+### Authentication Flow
+
+```
+1. User opens app → Keycloak JS checks for valid token
+2. No token → redirect to Keycloak login page
+3. Keycloak issues JWT → redirect back with code
+4. Frontend calls POST /api/users/me (auto-register)
+5. All API calls include Authorization: Bearer <token>
+6. Token refresh handled automatically by Keycloak JS adapter
+```
 
 ## Keycloak Authentication & Authorization
 

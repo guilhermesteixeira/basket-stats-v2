@@ -235,7 +235,62 @@ Define comprehensive test scenarios for MVP implementation covering:
 
 ---
 
-### 7. Performance Tests (Future)
+### 7. Frontend Tests — Component (Vitest + React Testing Library)
+
+> Test file location: `frontend/src/**/__tests__/` or `*.test.tsx`
+
+#### Authentication & Routing
+- 🔲 TC-FE-AUTH-001: Unauthenticated user is redirected to Keycloak login
+- 🔲 TC-FE-AUTH-002: After login, `POST /api/users/me` is called automatically
+- 🔲 TC-FE-AUTH-003: JWT token is injected in all Axios requests (Authorization header)
+- 🔲 TC-FE-AUTH-004: 401 response triggers token refresh; on failure redirects to login
+
+#### Team Registration (`/teams/new`)
+- 🔲 TC-FE-TEAM-001: Form renders with team name input and submit button
+- 🔲 TC-FE-TEAM-002: Submit with empty name shows validation error
+- 🔲 TC-FE-TEAM-003: Successful submission calls `POST /api/teams` and redirects
+- 🔲 TC-FE-TEAM-004: API error shows user-friendly error message
+
+#### Match List (`/`)
+- 🔲 TC-FE-MATCH-001: Renders list of matches from `GET /api/matches`
+- 🔲 TC-FE-MATCH-002: Loading state shown while fetching
+- 🔲 TC-FE-MATCH-003: Empty state shown when no matches exist
+- 🔲 TC-FE-MATCH-004: Status filter (All/Scheduled/Active/Finished) filters visible matches
+- 🔲 TC-FE-MATCH-005: Match card shows home team, away team, and status badge
+- 🔲 TC-FE-MATCH-006: "Create match" button only shown to authenticated match-creator
+
+#### Live Event Recording (`/matches/:id/live`)
+- 🔲 TC-FE-LIVE-001: Loads match data from `GET /api/matches/:id`
+- 🔲 TC-FE-LIVE-002: Score and MissedShot buttons open court map for coordinate selection
+- 🔲 TC-FE-LIVE-003: FreeThrow form shows Made/Missed toggle and foul type selector
+- 🔲 TC-FE-LIVE-004: Foul form shows player fouled input and flagrant checkbox
+- 🔲 TC-FE-LIVE-005: Substitution form shows player-in and player-out inputs
+- 🔲 TC-FE-LIVE-006: Period selector allows choosing period 1–4
+- 🔲 TC-FE-LIVE-007: Submitting event calls `POST /api/matches/:id/events` and refreshes match
+- 🔲 TC-FE-LIVE-008: Owner sees all 5 event types for own team
+- 🔲 TC-FE-LIVE-009: Opponent sees only Score, MissedShot, FreeThrow buttons for other team
+- 🔲 TC-FE-LIVE-010: 403 response shows "not authorised" message
+- 🔲 TC-FE-LIVE-011: Start Match button visible and functional for match owner (Scheduled match)
+- 🔲 TC-FE-LIVE-012: Finish Match button visible for match owner (Active match)
+- 🔲 TC-FE-LIVE-013: Event buttons disabled when match is Finished
+
+#### Court Map Component
+- 🔲 TC-FE-COURT-001: Clicking on court area sets coordinatesX and coordinatesY
+- 🔲 TC-FE-COURT-002: Coordinates normalised to 0–100 range
+- 🔲 TC-FE-COURT-003: Selected position shown as marker on court
+- 🔲 TC-FE-COURT-004: Coordinate value changes on different click positions
+
+#### Match Statistics (`/matches/:id/stats`)
+- 🔲 TC-FE-STATS-001: Score per period table renders correctly
+- 🔲 TC-FE-STATS-002: Team foul counts per period shown
+- 🔲 TC-FE-STATS-003: Score timeline chart renders with events data
+- 🔲 TC-FE-STATS-004: Player heat map renders made shots (green) and missed shots (red)
+- 🔲 TC-FE-STATS-005: Event log shows all events in chronological order
+- 🔲 TC-FE-STATS-006: Empty state shown when match has no events
+
+---
+
+### 8. Performance Tests (Future)
 - 🔲 TC-PERF-001: List 1000 matches with pagination
 - 🔲 TC-PERF-002: Add 100 events to single match
 - 🔲 TC-PERF-003: Query matches by team with large dataset
@@ -245,15 +300,20 @@ Define comprehensive test scenarios for MVP implementation covering:
 
 ## Test Framework
 
+### Backend
 - **Unit tests**: xUnit + Moq
-- **Integration tests**: xUnit + Firestore emulator (via `docker-compose up`)
+- **Integration tests**: xUnit + Firestore emulator (`docker-compose up`)
 - **Test runner**: `~/.dotnet/dotnet test <project.csproj>`
+
+### Frontend (planned)
+- **Unit/Component tests**: Vitest + React Testing Library
+- **Test runner**: `npm run test` (inside `frontend/`)
 
 ## Testing Priorities (MVP)
 
 1. **High Priority** (implemented): User/Team registration, Match lifecycle, Event authorization, Coordinates, Period timestamps
-2. **Medium Priority** (planned): Keycloak auth flows, API contract, Data persistence
-3. **Low Priority** (future): Performance, heat maps, pagination
+2. **Medium Priority** (planned): Keycloak auth flows, Frontend component tests, API contract/data persistence
+3. **Low Priority** (future): Performance, heat maps, pagination, E2E
 
 ## Notes
 
