@@ -1,239 +1,263 @@
 # Basket Stats MVP - Test Scenarios Plan
 
 ## Overview
+
 Define comprehensive test scenarios for MVP implementation covering:
-1. Authentication (Keycloak integration)
-2. Match Management (CRUD operations)
-3. Event Management (real-time updates)
-4. Authorization (role-based access)
+1. User & Team Registration
+2. Authentication (Keycloak integration)
+3. Match Management
+4. Event Management
 5. Data Validation
+
+**Legend**: ✅ Implemented · 🔲 Planned
+
+---
+
+## Test Summary
+
+| Project | Tests | Status |
+|---|---|---|
+| `BasketStats.Domain.Tests` | 88 | ✅ All passing |
+| `BasketStats.Application.Tests` | 51 | ✅ All passing |
+| `BasketStats.API.Tests` | 14 | ✅ All passing |
+| `BasketStats.Infrastructure.Tests` | 19 | ✅ All passing |
+| `BasketStats.Integration.Tests` | — | Requires Firestore emulator |
 
 ---
 
 ## Test Categories
 
-### 1. Authentication Tests (Keycloak)
+### 1. User & Team Registration
+
+> **Note on identity**: `RequestedByUserId` in all commands carries the Keycloak JWT `sub` claim.
+> Handlers resolve the internal Firestore user ID via `GetByKeycloakIdAsync`. Team `OwnerId`
+> is stored as the Firestore user ID (not the Keycloak sub).
+
+#### Create User (`POST /api/users/me`)
+- ✅ TC-USER-001: New user is created and returns internal Firestore ID
+- ✅ TC-USER-002: Existing user (same Keycloak sub) returns existing ID without duplicate save
+- ✅ TC-USER-003: Internal Firestore ID is a new GUID, distinct from the Keycloak sub
+
+#### Create Team (`POST /api/teams`)
+- ✅ TC-TEAM-001: Valid request creates team; OwnerId = requester's Firestore user ID
+- ✅ TC-TEAM-002: Unknown Keycloak sub throws NotFoundException
+- ✅ TC-TEAM-003: OwnerId is Firestore user ID (not Keycloak sub)
+- ✅ TC-TEAM-004: Same owner can create multiple teams with distinct IDs
+
+---
+
+### 2. Authentication Tests (Keycloak)
+
 #### Login Scenarios
-- TC-AUTH-001: Successful login with valid credentials
-- TC-AUTH-002: Failed login with invalid email
-- TC-AUTH-003: Failed login with invalid password
-- TC-AUTH-004: Login with non-existent user
-- TC-AUTH-005: Token validation and expiration
+- 🔲 TC-AUTH-001: Successful login with valid credentials
+- 🔲 TC-AUTH-002: Failed login with invalid email
+- 🔲 TC-AUTH-003: Failed login with invalid password
+- 🔲 TC-AUTH-004: Login with non-existent user
+- 🔲 TC-AUTH-005: Token validation and expiration
 
 #### Authorization Scenarios
-- TC-AUTH-006: User with admin role can access admin endpoints
-- TC-AUTH-007: User without admin role cannot access admin endpoints
-- TC-AUTH-008: Team owner can add all event types to own team
-- TC-AUTH-009: Opponent can only add score events to other team (not fouls/substitutions)
-- TC-AUTH-010: Non-involved user cannot add any events to match
+- 🔲 TC-AUTH-006: User with admin role can access admin endpoints
+- 🔲 TC-AUTH-007: User without admin role cannot access admin endpoints
+- ✅ TC-AUTH-008: Team owner can add all event types to own team
+- ✅ TC-AUTH-009: Opponent can add Score, MissedShot, FreeThrow to other team — but not Foul or Substitution
+- ✅ TC-AUTH-010: Non-involved user cannot add any events to match (ForbiddenException)
+- ✅ TC-AUTH-011: Admin user bypasses authorization and can add any event type
 
 ---
 
-### 2. Match Management Tests (CRUD)
-#### Create Match
-- TC-MATCH-001: Successfully create match with valid data
-- TC-MATCH-002: Fail to create with missing required fields (teams, players)
-- TC-MATCH-003: Fail to create with invalid team data
-- TC-MATCH-004: Fail to create with duplicate teams
-- TC-MATCH-005: Create match with minimum required fields
+### 3. Match Management Tests
 
-#### Read Match
-- TC-MATCH-006: Retrieve existing match by ID
-- TC-MATCH-007: Fail to retrieve non-existent match (404)
-- TC-MATCH-008: List all matches with pagination
-- TC-MATCH-009: Filter matches by team
-- TC-MATCH-010: Filter matches by status (active, finished, scheduled)
+#### Create Match (`POST /api/matches`)
+- ✅ TC-MATCH-001: Successfully create match with valid team IDs → returns match ID
+- ✅ TC-MATCH-002: Home team not found → NotFoundException
+- ✅ TC-MATCH-003: Away team not found → NotFoundException
+- ✅ TC-MATCH-004: Home and away team are the same → InvalidOperationException
+- 🔲 TC-MATCH-005: Requesting user not found → NotFoundException
 
-#### Update Match
-- TC-MATCH-011: Update match status (scheduled → active → finished)
-- TC-MATCH-012: Fail to update with invalid status transition
-- TC-MATCH-013: Fail to update non-existent match
-- TC-MATCH-014: Only creator/admin can update match
+#### Read Match (`GET /api/matches/{id}`, `GET /api/matches`)
+- ✅ TC-MATCH-006: Retrieve existing match by ID
+- ✅ TC-MATCH-007: Retrieve non-existent match → NotFoundException (404)
+- ✅ TC-MATCH-008: List all matches returns collection
 
-#### Delete Match
-- TC-MATCH-015: Successfully delete match (admin only)
-- TC-MATCH-016: Fail to delete with insufficient permissions
-- TC-MATCH-017: Cascade delete associated events
+#### Match Lifecycle (`PUT /api/matches/{id}/start`, `PUT /api/matches/{id}/finish`)
+- ✅ TC-MATCH-011: Scheduled → Active (start succeeds)
+- ✅ TC-MATCH-012: Active → Active (start again) → InvalidOperationException
+- ✅ TC-MATCH-013: Active → Finished (finish succeeds)
+- ✅ TC-MATCH-014: Scheduled → Finished (skip start) → InvalidOperationException
+- ✅ TC-MATCH-015: Match not found → NotFoundException
 
 ---
 
-### 3. Event Management Tests
+### 4. Event Management Tests
 
 #### Event Ownership & Authorization Rules
-**KEY REQUIREMENT**: 
-- Team owner can register: Score, Missed Shot, Free Throw, Foul, Substitution for their team
-- Opponent can register: Score, Missed Shot, and Free Throw for opponent team
+
+**Business Rules:**
+- Team owner can register: Score, MissedShot, FreeThrow, Foul, Substitution for **their** team
+- Opponent can register: Score, MissedShot, FreeThrow for the **other** team
 - Non-participants cannot register any events
 
-#### Period & Timestamp Requirements
-**KEY REQUIREMENT**:
-- Match has 4 periods (10 minutes each - FIBA standard)
-- Each period tracked: number, startTime, endTime
-- Each event MUST include:
-  - Absolute timestamp (when event occurred)
-  - Period number (1-4)
-  - Period timestamp (seconds within period, 0-600s)
-- Period timestamp used for:
-  - Score evolution graphs (points per period)
-  - Performance analysis by quarter
-  - Timeline visualizations
-- Reject events with invalid period timestamps (outside 0-600s range)
-**KEY REQUIREMENT**:
-- Free throw events based on foul type:
-  - Personal foul (no bonus): 1 free throw
-  - Personal foul (team bonus - 4+ fouls): 2 free throws
-  - Technical foul: 1 free throw
-  - Flagrant foul: 2 free throws + ball possession
-- Each free throw registered separately (made or missed)
-- 1 point per made free throw
-- NO coordinates (linha de lance is fixed position)
-- Tracked as separate metric: made vs missed free throws
+#### Add Event to Own Team (authorized)
+- ✅ TC-EVENT-001: Score event to own team
+- ✅ TC-EVENT-002: Foul event to own team
+- ✅ TC-EVENT-003: Substitution event to own team
+- ✅ TC-EVENT-004: MissedShot event to own team (with coordinates)
+- ✅ TC-EVENT-005: FreeThrow (made) to own team
 
-#### Shot Coordinates Requirement
-**KEY REQUIREMENT**: 
-- Score events (2 or 3 points) must include shot coordinates (x, y)
-- Missed shot events must include shot coordinates (x, y)
-- Coordinates represent position on court where shot was attempted
-- User clicks on visual court image to select position
-- Only coordinates stored in database (NOT the image itself)
-- Coordinates used to generate player heat maps showing:
-  - Made shots (successful attempts)
-  - Missed shots (failed attempts)
-  - Overall shooting patterns
-- Reject score/missed shot events without coordinates
+#### Add Event to Opponent Team
+- ✅ TC-EVENT-007: Score event to opponent team (authorized)
+- ✅ TC-EVENT-008: MissedShot to opponent team (authorized)
+- ✅ TC-EVENT-009: FreeThrow to opponent team (authorized)
+- ✅ TC-EVENT-010: Foul to opponent team → ForbiddenException
+- ✅ TC-EVENT-011: Substitution to opponent team → ForbiddenException
 
-#### Add Event
-- TC-EVENT-001: Add score event to own team (authorized)
-- TC-EVENT-002: Add foul event to own team (authorized)
-- TC-EVENT-003: Add substitution event to own team (authorized)
-- TC-EVENT-004: Add missed shot event to own team (authorized)
-- TC-EVENT-005: Add free throw event to own team (authorized)
-- TC-EVENT-007: Add score event to opponent team (authorized)
-- TC-EVENT-008: Add missed shot to opponent team (authorized)
-- TC-EVENT-009: Add free throw to opponent team (authorized)
-- TC-EVENT-010: Deny foul event to opponent team (unauthorized)
-- TC-EVENT-011: Deny substitution to opponent team (unauthorized)
-- TC-EVENT-012: Verify event ownership restrictions enforced
-- TC-EVENT-013: Score event requires coordinates (2-pointer)
-- TC-EVENT-014: Score event requires coordinates (3-pointer)
-- TC-EVENT-015: Missed shot event requires coordinates
-- TC-EVENT-016: Reject score without coordinates
-- TC-EVENT-017: Reject missed shot without coordinates
-- TC-EVENT-018: Free throw does NOT require coordinates
-- TC-EVENT-019: Foul event does NOT require coordinates
-- TC-EVENT-020: Substitution does NOT require coordinates
-- TC-EVENT-021: Fail to add event to finished match
-- TC-EVENT-022: Fail to add event to non-existent match
-- TC-EVENT-023: Events stored in chronological order
+#### Shot Coordinates
 
-#### Free Throw Tests
-- TC-EVENT-024: Add 1 free throw (personal foul, no bonus)
-- TC-EVENT-025: Add 2 free throws (personal foul, team bonus)
-- TC-EVENT-026: Add 1 free throw (technical foul)
-- TC-EVENT-027: Add 2 free throws (flagrant foul)
-- TC-EVENT-028: Made free throw = 1 point
-- TC-EVENT-029: Missed free throw = 0 points
-- TC-EVENT-030: Track made vs missed free throws separately
-- TC-EVENT-031: Free throw does NOT require coordinates
-- TC-EVENT-032: Count team fouls per period for bonus calculation
-- TC-EVENT-033: Trigger 2 free throws after 4 team fouls (bonus)
+**Business Rules:**
+- Score (2pt or 3pt) events **must** include coordinates `{x, y}` in range 0–100
+- MissedShot events **must** include coordinates
+- FreeThrow, Foul, Substitution events do **not** require coordinates
 
-#### Event Retrieval
-- TC-EVENT-034: Get all events for a match
-- TC-EVENT-035: Get events filtered by type (score, missed, free_throw, foul, substitution)
-- TC-EVENT-036: Events returned in chronological order
-- TC-EVENT-037: Pagination support for large event lists
+- ✅ TC-EVENT-013: 2-point score requires coordinates
+- ✅ TC-EVENT-014: 3-point score requires coordinates (domain: `ScoreEvent` validates points = 2 or 3)
+- ✅ TC-EVENT-016: Score without coordinates → InvalidOperationException
+- ✅ TC-EVENT-017: MissedShot without coordinates → InvalidOperationException
+- ✅ TC-EVENT-018: FreeThrow without coordinates → succeeds
+- ✅ TC-EVENT-019: Foul without coordinates → succeeds
+- ✅ TC-EVENT-020: Substitution without coordinates → succeeds
+- ✅ TC-EVENT-038: Coordinates `{x, y}` stored on ScoreEvent
+- ✅ TC-EVENT-039: Coordinates `{x, y}` stored on MissedShotEvent
+- ✅ TC-EVENT-040: Coordinates out of 0–100 range → ArgumentException (domain)
 
-#### Coordinate Storage
-- TC-EVENT-038: Store shot coordinates (x, y) for score event
-- TC-EVENT-039: Store shot coordinates (x, y) for missed shot
-- TC-EVENT-040: Coordinates in valid court range (0-100)
-- TC-EVENT-041: Generate heat map from made shots
-- TC-EVENT-042: Generate heat map from missed shots
-- TC-EVENT-043: Generate combined heat map (made + missed)
-- TC-EVENT-044: Filter heat map by player
-- TC-EVENT-045: Filter heat map by team
+#### Match State Guards
+- ✅ TC-EVENT-021: Add event to finished match → InvalidOperationException
+- ✅ TC-EVENT-022: Add event to non-existent match → NotFoundException
 
-#### Period & Timeline Tests
-- TC-EVENT-046: Record event with correct absolute timestamp
-- TC-EVENT-047: Record event with period number (1-4)
-- TC-EVENT-048: Record event with period timestamp (seconds within period)
-- TC-EVENT-049: Period timestamp must be within 0-600s range
-- TC-EVENT-050: Reject event with invalid period timestamp
-- TC-EVENT-051: Reject event with invalid period number (>4)
-- TC-EVENT-052: Generate score evolution graph by period
-- TC-EVENT-053: Show points scored per quarter timeline
-- TC-EVENT-054: Display points over time during match
+#### Period & Timestamp
+
+**Business Rules:**
+- Each event carries `PeriodNumber` (1–4) and `PeriodTimestamp` (0–600 seconds within period)
+
+- ✅ TC-EVENT-047: Event records the correct period number (1–4)
+- ✅ TC-EVENT-049: PeriodTimestamp 0–600 → valid
+- ✅ TC-EVENT-050: PeriodTimestamp > 600 → ArgumentException
+
+#### Free Throw
+
+**Business Rules (FIBA):**
+- Personal foul (no bonus): 1 free throw
+- Personal foul (team bonus — 4+ fouls in period): 2 free throws
+- Technical foul: 1 free throw
+- Flagrant foul: 2 free throws + ball possession
+
+- ✅ TC-EVENT-024: FreeThrow with `Made = true` is recorded
+- ✅ TC-EVENT-029: FreeThrow with `Made = false` is recorded
+- ✅ TC-EVENT-032: `Match.GetTeamFoulCount` counts fouls per team per period
+- ✅ TC-EVENT-033: Fouls in different periods are counted independently
+
+#### Event Domain — Value Objects
+- ✅ TC-SCORE-001: ScoreEvent with 2 points succeeds
+- ✅ TC-SCORE-002: ScoreEvent with 3 points succeeds
+- ✅ TC-SCORE-003: ScoreEvent with 1, 4, or 5 points → ArgumentException
+- ✅ TC-SCORE-004: ScoreEvent without coordinates → ArgumentNullException
+- ✅ TC-MISSED-001: MissedShotEvent with coordinates succeeds
+- ✅ TC-MISSED-002: MissedShotEvent without coordinates → ArgumentNullException
+- ✅ TC-FREE-001: FreeThrowEvent (made) succeeds
+- ✅ TC-FREE-002: FreeThrowEvent (missed) succeeds
+- ✅ TC-FREE-003: FreeThrow with Personal, Technical foul types succeeds
+- ✅ TC-FOUL-001: FoulEvent (personal) succeeds
+- ✅ TC-FOUL-002: FoulEvent (flagrant) sets `Flagrant = true`
+- ✅ TC-FOUL-003: FoulEvent with empty fouled-player ID → ArgumentException
+- ✅ TC-SUB-001: SubstitutionEvent succeeds
+- ✅ TC-SUB-002: SubstitutionEvent with empty player-out ID → ArgumentException
+- ✅ TC-EVT-BASE-001: Event with empty teamId → ArgumentException
+- ✅ TC-EVT-BASE-002: Event with empty playerId → ArgumentException
+- ✅ TC-EVT-BASE-003: PeriodTimestamp 0, 300, 600 → valid
+- ✅ TC-EVT-BASE-004: PeriodTimestamp -1 or 601 → ArgumentException
 
 ---
 
-### 4. Data Validation Tests
-#### Match Validation
-- TC-DATA-001: Team names cannot be empty
-- TC-DATA-002: Player count minimum met (team must have players)
-- TC-DATA-003: No duplicate players in team
-- TC-DATA-004: Valid status values (scheduled, active, finished)
-- TC-DATA-005: Start time cannot be in past
+### 5. Data Validation Tests — Domain
 
-#### User Validation
-- TC-DATA-006: Email format validation
-- TC-DATA-007: Role must be from predefined list (admin, creator, viewer)
-- TC-DATA-008: User ID mapped correctly from Keycloak
+#### Match Entity
+- ✅ TC-DATA-001: Match created with valid teams — status = Scheduled, 4 periods, no events
+- ✅ TC-DATA-002: Empty homeTeamId → ArgumentException
+- ✅ TC-DATA-003: Empty awayTeamId → ArgumentException
+- ✅ TC-DATA-004: Same team IDs → InvalidOperationException
+- ✅ TC-DATA-005: Start scheduled match → status = Active, StartedAt set
+- ✅ TC-DATA-006: Start already-active match → InvalidOperationException
+- ✅ TC-DATA-007: Finish active match → status = Finished, FinishedAt set
+- ✅ TC-DATA-008: Finish scheduled match → InvalidOperationException
+
+#### Team Entity
+- ✅ TC-DATA-009: Valid team creation sets Id, Name, OwnerId
+- ✅ TC-DATA-010: Empty Id, Name, or OwnerId → ArgumentException
+- ✅ TC-DATA-011: `IsOwnedBy` correct owner → true
+- ✅ TC-DATA-012: `IsOwnedBy` wrong owner → false
+
+#### User Entity
+- ✅ TC-DATA-013: Valid user creation sets Id, Email, Name, KeycloakId, empty Roles
+- ✅ TC-DATA-014: Empty Id, Email, Name, or KeycloakId → ArgumentException
+- ✅ TC-DATA-015: AddRole adds role to list
+- ✅ TC-DATA-016: AddRole duplicate → no duplicate stored
+- ✅ TC-DATA-017: AddRole empty string → ArgumentException
+- ✅ TC-DATA-018: HasRole with existing role → true
+- ✅ TC-DATA-019: HasRole with non-existing role → false
+- ✅ TC-DATA-020: `IsMatchCreator` / `IsAdmin` reflect roles correctly
+
+#### Value Objects
+- ✅ TC-VO-001: Coordinates 0–100 range → valid
+- ✅ TC-VO-002: Coordinates outside 0–100 → ArgumentException
+- ✅ TC-VO-003: Coordinates equality by value
+- ✅ TC-VO-004: Period created with valid PeriodNumber → IsActive = true
+- ✅ TC-VO-005: Period.End sets EndTime, IsActive = false
+- ✅ TC-VO-006: Period.End before start → InvalidOperationException
+- ✅ TC-VO-007: Period.ElapsedSeconds capped at 600s
+
+---
+
+### 6. Integration Tests (`BasketStats.Integration.Tests`)
+
+> Require Firestore emulator running (`docker-compose up`).
+
+#### Repository — Match
+- 🔲 TC-INT-MATCH-001: Save and retrieve match by ID
+- 🔲 TC-INT-MATCH-002: List all matches returns persisted matches
+- 🔲 TC-INT-MATCH-003: Save match with events — events persisted
+
+#### Repository — Team
+- 🔲 TC-INT-TEAM-001: Save and retrieve team by ID
+- 🔲 TC-INT-TEAM-002: Non-existent team ID returns null
+
+#### Repository — User
+- 🔲 TC-INT-USER-001: Save and retrieve user by Keycloak ID
+- 🔲 TC-INT-USER-002: Non-existent Keycloak ID returns null
 
 ---
 
-### 5. Integration Tests
-#### API Contract
-- TC-INT-001: All endpoints return correct HTTP status codes
-- TC-INT-002: Error responses have consistent format
-- TC-INT-003: Success responses match defined schema
-- TC-INT-004: Request validation errors return 400
-- TC-INT-005: Authorization errors return 401/403
-
-#### Data Persistence
-- TC-INT-006: Match persisted in Firestore
-- TC-INT-007: Events persisted with correct relationships
-- TC-INT-008: Concurrent event additions handled correctly
-- TC-INT-009: Transactions ensure data consistency
+### 7. Performance Tests (Future)
+- 🔲 TC-PERF-001: List 1000 matches with pagination
+- 🔲 TC-PERF-002: Add 100 events to single match
+- 🔲 TC-PERF-003: Query matches by team with large dataset
+- 🔲 TC-PERF-004: Cloud Run startup time < 5s
 
 ---
 
-### 6. Performance Tests (Future)
-- TC-PERF-001: List 1000 matches with pagination
-- TC-PERF-002: Add 100 events to single match
-- TC-PERF-003: Query matches by team with large dataset
-- TC-PERF-004: Cloud Run startup time < 5s
+## Test Framework
 
----
-
-## Test Implementation Strategy
-
-### Unit Tests
-- Domain models validation
-- Service business logic
-- Event processing
-
-### Integration Tests
-- API endpoints
-- Database operations
-- Keycloak authentication flow
-
-### Test Framework
-- xUnit or NUnit for .NET Core
-- Moq for mocking
-- TestContainers for database testing (Firestore emulator)
-
----
+- **Unit tests**: xUnit + Moq
+- **Integration tests**: xUnit + Firestore emulator (via `docker-compose up`)
+- **Test runner**: `~/.dotnet/dotnet test <project.csproj>`
 
 ## Testing Priorities (MVP)
-1. **High Priority**: Authentication, Match CRUD, Event operations
-2. **Medium Priority**: Authorization, Data validation, API contracts
-3. **Low Priority**: Performance, edge cases
 
----
+1. **High Priority** (implemented): User/Team registration, Match lifecycle, Event authorization, Coordinates, Period timestamps
+2. **Medium Priority** (planned): Keycloak auth flows, API contract, Data persistence
+3. **Low Priority** (future): Performance, heat maps, pagination
 
 ## Notes
-- Use Firestore emulator locally for testing
-- Mock Keycloak responses for unit tests
-- Integration tests use real Keycloak test instance
-- Aim for >80% code coverage for critical paths
+
+- Controllers pass the JWT `sub` claim as `RequestedByUserId` to all commands
+- Handlers resolve the internal Firestore user via `GetByKeycloakIdAsync` — never `GetByIdAsync`
+- Team `OwnerId` stores the Firestore user ID; `IsOwnedBy` must compare against `user.Id`, not the Keycloak sub
+- Integration tests require Firestore emulator: `docker-compose up firestore`
