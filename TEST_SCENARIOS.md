@@ -290,7 +290,42 @@ Define comprehensive test scenarios for MVP implementation covering:
 
 ---
 
-### 8. Performance Tests (Future)
+### 8. Frontend Tests — Offline / PWA (Vitest + RTL)
+
+> Simulate offline by mocking `navigator.onLine` and overriding `fetch`/Axios to reject.
+
+#### Network status hook (`useNetworkStatus`)
+- 🔲 TC-FE-OFFLINE-001: `isOnline = true` when `navigator.onLine` is true
+- 🔲 TC-FE-OFFLINE-002: `isOnline = false` when `navigator.onLine` is false
+- 🔲 TC-FE-OFFLINE-003: Hook reacts to `online`/`offline` window events
+
+#### Offline banner component
+- 🔲 TC-FE-OFFLINE-004: Banner shown when `isOnline = false`
+- 🔲 TC-FE-OFFLINE-005: Banner hidden when `isOnline = true`
+- 🔲 TC-FE-OFFLINE-006: Banner shows pending event count when > 0
+
+#### `useAddEvent` hook (offline-first mutation)
+- 🔲 TC-FE-OFFLINE-007: Online — calls API directly, no Dexie entry created
+- 🔲 TC-FE-OFFLINE-008: Offline — event saved to Dexie with status `pending`, no API call
+- 🔲 TC-FE-OFFLINE-009: Offline — UI updates optimistically (event appears in list immediately)
+- 🔲 TC-FE-OFFLINE-010: Multiple events offline — all saved to Dexie in order
+
+#### Sync / flush queue (`useSyncQueue`)
+- 🔲 TC-FE-OFFLINE-011: On reconnect (`online` event), pending events are flushed in FIFO order
+- 🔲 TC-FE-OFFLINE-012: Successful sync removes event from Dexie queue
+- 🔲 TC-FE-OFFLINE-013: Failed sync marks event as `failed` and does not remove it
+- 🔲 TC-FE-OFFLINE-014: Events for match A and match B are synced independently
+
+#### Live page offline UX
+- 🔲 TC-FE-OFFLINE-015: Event buttons remain enabled when offline
+- 🔲 TC-FE-OFFLINE-016: Added events show "pending sync" indicator when offline
+- 🔲 TC-FE-OFFLINE-017: After reconnect, pending indicators cleared after successful sync
+- 🔲 TC-FE-OFFLINE-018: Match detail loads from cache (stale data) when offline
+- 🔲 TC-FE-OFFLINE-019: "Último estado conhecido" timestamp shown on cached data
+
+---
+
+### 9. Performance Tests (Future)
 - 🔲 TC-PERF-001: List 1000 matches with pagination
 - 🔲 TC-PERF-002: Add 100 events to single match
 - 🔲 TC-PERF-003: Query matches by team with large dataset

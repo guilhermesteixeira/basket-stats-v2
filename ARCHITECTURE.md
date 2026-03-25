@@ -411,8 +411,18 @@ The React frontend is a **separate application** (`frontend/`) that communicates
 | Login | `/login` | Keycloak-delegated authentication |
 | Team Registration | `/teams/new` | Create a team (authenticated) |
 | Match List | `/` | List all matches with status filter |
-| Live Event Recording | `/matches/:id/live` | Add events in real-time (owner/opponent) |
+| Live Event Recording | `/matches/:id/live` | Add events in real-time (owner/opponent) — **offline-capable** |
 | Match Statistics | `/matches/:id/stats` | Score timeline, foul counts, player heat map |
+
+### Offline-First (PWA)
+
+The app targets venues with **poor or no connectivity** (gyms without reliable WiFi).
+
+- **Service Worker** (Workbox via `vite-plugin-pwa`): caches static assets + last known match state
+- **IndexedDB queue** (Dexie.js): events recorded offline are stored locally
+- **Auto-sync**: when connectivity is restored, queued events are flushed to the API in FIFO order
+- **Optimistic UI**: offline events appear immediately in the live page, marked as "pending sync"
+- **Installable**: the app can be added to the home screen on iOS/Android
 
 ### Authentication Flow
 
