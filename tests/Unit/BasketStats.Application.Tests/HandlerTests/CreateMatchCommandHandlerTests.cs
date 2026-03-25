@@ -23,11 +23,11 @@ public class CreateMatchCommandHandlerTests
         // Arrange
         var homeTeam = Team.Create("home-1", "Home Team", "owner-1");
         var awayTeam = Team.Create("away-1", "Away Team", "owner-2");
-        var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
+        var user = User.Create("user-1", "user@test.com", "Test User", "user-1");
 
         _teamRepo.Setup(r => r.GetByIdAsync("home-1", default)).ReturnsAsync(homeTeam);
         _teamRepo.Setup(r => r.GetByIdAsync("away-1", default)).ReturnsAsync(awayTeam);
-        _userRepo.Setup(r => r.GetByIdAsync("user-1", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-1", default)).ReturnsAsync(user);
         _matchRepo.Setup(r => r.SaveAsync(It.IsAny<DomainMatch>(), default)).Returns(Task.CompletedTask);
 
         var command = new CreateMatchCommand("home-1", "away-1", "user-1");
@@ -72,10 +72,10 @@ public class CreateMatchCommandHandlerTests
     {
         // Arrange
         var team = Team.Create("team-1", "Team One", "owner-1");
-        var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
+        var user = User.Create("user-1", "user@test.com", "Test User", "user-1");
 
         _teamRepo.Setup(r => r.GetByIdAsync("team-1", default)).ReturnsAsync(team);
-        _userRepo.Setup(r => r.GetByIdAsync("user-1", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-1", default)).ReturnsAsync(user);
 
         var command = new CreateMatchCommand("team-1", "team-1", "user-1");
 

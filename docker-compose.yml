@@ -9,8 +9,11 @@ services:
       KC_DB: dev-file
     ports:
       - "8080:8080"
+    volumes:
+      - ./.docker/keycloak:/opt/keycloak/data/import
     command:
       - start-dev
+      - --import-realm
     networks:
       - basket-stats-network
     healthcheck:

@@ -20,10 +20,10 @@ public class StartMatchCommandHandlerTests
     {
         // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
-        var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
+        var user = User.Create("user-1", "user@test.com", "Test User", "user-1");
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync("user-1", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-1", default)).ReturnsAsync(user);
         _matchRepo.Setup(r => r.SaveAsync(match, default)).Returns(Task.CompletedTask);
 
         var command = new StartMatchCommand(match.Id.Value, "user-1");
@@ -55,10 +55,10 @@ public class StartMatchCommandHandlerTests
         // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         match.Start(); // already active
-        var user = User.Create("user-1", "user@test.com", "Test User", "kc-1");
+        var user = User.Create("user-1", "user@test.com", "Test User", "user-1");
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync("user-1", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-1", default)).ReturnsAsync(user);
 
         var command = new StartMatchCommand(match.Id.Value, "user-1");
 

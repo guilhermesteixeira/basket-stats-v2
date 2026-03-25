@@ -45,7 +45,7 @@ public class AddEventCommandHandlerTests
     private void SetupMatchAndTeams(DomainMatch match, Team homeTeam, Team awayTeam, User user)
     {
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync(user.Id, default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync(user.KeycloakId, default)).ReturnsAsync(user);
         _teamRepo.Setup(r => r.GetByIdAsync(homeTeam.Id, default)).ReturnsAsync(homeTeam);
         _teamRepo.Setup(r => r.GetByIdAsync(awayTeam.Id, default)).ReturnsAsync(awayTeam);
         _matchRepo.Setup(r => r.SaveAsync(match, default)).Returns(Task.CompletedTask);
@@ -59,7 +59,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = BuildScoreCommand(match.Id.Value, "home-1", "user-1");
@@ -80,7 +80,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -113,7 +113,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -145,7 +145,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -178,7 +178,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -212,7 +212,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "owner-away");
-        var adminUser = User.Create("admin-user", "admin@t.com", "Admin", "kc-admin");
+        var adminUser = User.Create("admin-user", "admin@t.com", "Admin", "admin-user");
         adminUser.AddRole("admin");
         SetupMatchAndTeams(match, homeTeam, awayTeam, adminUser);
 
@@ -247,7 +247,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "user-away");
-        var user = User.Create("user-away", "away@t.com", "Away User", "kc-away");
+        var user = User.Create("user-away", "away@t.com", "Away User", "user-away");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = BuildScoreCommand(match.Id.Value, "home-1", "user-away");
@@ -268,7 +268,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "user-away");
-        var user = User.Create("user-away", "away@t.com", "Away User", "kc-away");
+        var user = User.Create("user-away", "away@t.com", "Away User", "user-away");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -300,7 +300,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "user-away");
-        var user = User.Create("user-away", "away@t.com", "Away User", "kc-away");
+        var user = User.Create("user-away", "away@t.com", "Away User", "user-away");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -332,10 +332,10 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "user-away");
-        var user = User.Create("user-away", "away@t.com", "Away User", "kc-away");
+        var user = User.Create("user-away", "away@t.com", "Away User", "user-away");
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync("user-away", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-away", default)).ReturnsAsync(user);
         _teamRepo.Setup(r => r.GetByIdAsync("home-1", default)).ReturnsAsync(homeTeam);
         _teamRepo.Setup(r => r.GetByIdAsync("away-1", default)).ReturnsAsync(awayTeam);
 
@@ -365,10 +365,10 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "user-away");
-        var user = User.Create("user-away", "away@t.com", "Away User", "kc-away");
+        var user = User.Create("user-away", "away@t.com", "Away User", "user-away");
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync("user-away", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-away", default)).ReturnsAsync(user);
         _teamRepo.Setup(r => r.GetByIdAsync("home-1", default)).ReturnsAsync(homeTeam);
         _teamRepo.Setup(r => r.GetByIdAsync("away-1", default)).ReturnsAsync(awayTeam);
 
@@ -396,7 +396,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = BuildScoreCommand(match.Id.Value, "home-1", "user-1",
@@ -414,7 +414,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -442,7 +442,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -476,7 +476,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -511,7 +511,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = new AddEventCommand
@@ -573,10 +573,10 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "owner-home");
         var awayTeam = Team.Create("away-1", "Away", "owner-away");
-        var user = User.Create("user-x", "x@t.com", "Other User", "kc-x");
+        var user = User.Create("user-x", "x@t.com", "Other User", "user-x");
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-        _userRepo.Setup(r => r.GetByIdAsync("user-x", default)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-x", default)).ReturnsAsync(user);
         _teamRepo.Setup(r => r.GetByIdAsync("home-1", default)).ReturnsAsync(homeTeam);
         _teamRepo.Setup(r => r.GetByIdAsync("away-1", default)).ReturnsAsync(awayTeam);
 
@@ -594,7 +594,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = BuildScoreCommand(match.Id.Value, "home-1", "user-1");
@@ -616,7 +616,7 @@ public class AddEventCommandHandlerTests
         var match = CreateActiveMatch("home-1", "away-1");
         var homeTeam = Team.Create("home-1", "Home", "user-1");
         var awayTeam = Team.Create("away-1", "Away", "owner-2");
-        var user = User.Create("user-1", "u@t.com", "User", "kc-1");
+        var user = User.Create("user-1", "u@t.com", "User", "user-1");
         SetupMatchAndTeams(match, homeTeam, awayTeam, user);
 
         var command = BuildScoreCommand(match.Id.Value, "home-1", "user-1");
