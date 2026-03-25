@@ -1,11 +1,17 @@
 ### BasketStats API - Happy Path
 ### Requires: docker-compose up (Keycloak at :8080, API at :5273)
-### Environment: select "dev" in the Rider HTTP Client env selector
 ###
 ### Enum reference:
 ###   EventType:    1=Score, 2=MissedShot, 3=FreeThrow, 4=Foul, 5=Substitution
 ###   PeriodNumber: 1=One, 2=Two, 3=Three, 4=Four
 ###   FoulType:     1=Personal, 2=Technical, 3=Flagrant
+
+@host = http://localhost:5273
+@keycloak = http://localhost:8080
+@realm = basket-stats
+@client_id = basket-stats-api
+@username = admin@basketstats.com
+@password = admin123
 
 # ── Step 1: Get JWT token from Keycloak ──────────────────────────────────────
 
