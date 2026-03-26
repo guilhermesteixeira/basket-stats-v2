@@ -172,7 +172,7 @@ public class AddEventCommandHandlerTests
 
     // TC-EVENT-005
     [Fact]
-    public async Task Handle_HomeOwnerAddsFreeThrow_Made_Succeeds()
+    public async Task Handle_HomeOwnerAddsTurnover_Succeeds()
     {
         // Arrange
         var match = CreateActiveMatch("home-1", "away-1");
@@ -186,12 +186,10 @@ public class AddEventCommandHandlerTests
             MatchId = match.Id.Value,
             TeamId = "home-1",
             PlayerId = "player-1",
-            Type = EventType.FreeThrow,
+            Type = EventType.Turnover,
             PeriodNumber = PeriodNumber.One,
             PeriodTimestamp = 150,
-            RequestedByUserId = "user-1",
-            Made = true,
-            FoulType = FoulType.Personal
+            RequestedByUserId = "user-1"
         };
 
         // Act
@@ -200,8 +198,7 @@ public class AddEventCommandHandlerTests
         // Assert
         Assert.NotEmpty(result);
         Assert.Single(match.Events);
-        var ftEvent = Assert.IsType<FreeThrowEvent>(match.Events[0]);
-        Assert.True(ftEvent.Made);
+        Assert.IsType<TurnoverEvent>(match.Events[0]);
     }
 
     // TC-EVENT-006: Admin user bypasses authorization restrictions
@@ -292,9 +289,9 @@ public class AddEventCommandHandlerTests
         Assert.Single(match.Events);
     }
 
-    // TC-EVENT-009: Away owner tracks opponent's free throw (allowed)
+    // TC-EVENT-009: Away owner tracks opponent's turnover (allowed)
     [Fact]
-    public async Task Handle_AwayOwnerAddsFreeThrow_ForOpponentTeam_Succeeds()
+    public async Task Handle_AwayOwnerAddsTurnover_ForOpponentTeam_Succeeds()
     {
         // Arrange
         var match = CreateActiveMatch("home-1", "away-1");
@@ -308,12 +305,10 @@ public class AddEventCommandHandlerTests
             MatchId = match.Id.Value,
             TeamId = "home-1",
             PlayerId = "player-1",
-            Type = EventType.FreeThrow,
+            Type = EventType.Turnover,
             PeriodNumber = PeriodNumber.One,
             PeriodTimestamp = 150,
-            RequestedByUserId = "user-away",
-            Made = true,
-            FoulType = FoulType.Personal
+            RequestedByUserId = "user-away"
         };
 
         // Act
@@ -434,9 +429,9 @@ public class AddEventCommandHandlerTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler().Handle(command, default));
     }
 
-    // TC-EVENT-018: Free throw does NOT require coordinates
+    // TC-EVENT-018: Turnover does NOT require coordinates
     [Fact]
-    public async Task Handle_FreeThrowEvent_WithoutCoordinates_Succeeds()
+    public async Task Handle_TurnoverEvent_WithoutCoordinates_Succeeds()
     {
         // Arrange
         var match = CreateActiveMatch("home-1", "away-1");
@@ -450,12 +445,10 @@ public class AddEventCommandHandlerTests
             MatchId = match.Id.Value,
             TeamId = "home-1",
             PlayerId = "player-1",
-            Type = EventType.FreeThrow,
+            Type = EventType.Turnover,
             PeriodNumber = PeriodNumber.One,
             PeriodTimestamp = 150,
             RequestedByUserId = "user-1",
-            Made = true,
-            FoulType = FoulType.Personal,
             CoordinatesX = null,
             CoordinatesY = null
         };

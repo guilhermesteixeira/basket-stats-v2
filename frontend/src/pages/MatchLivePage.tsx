@@ -89,7 +89,6 @@ export function MatchLivePage() {
     points?: number
     coordinatesX?: number
     coordinatesY?: number
-    made?: boolean
     foulType?: string
     flagrant?: boolean
     playerFouledId?: string
@@ -107,8 +106,8 @@ export function MatchLivePage() {
       const playerName = selectedPlayer?.player.name ?? action.playerId
       const feedbackText = action.type === 'Score'
         ? `${playerName} +${action.points}pts`
-        : action.type === 'FreeThrow'
-          ? `${playerName} FT ${action.made ? '✓' : '✗'}`
+        : action.type === 'Turnover'
+          ? `${playerName} Turnover`
           : `${playerName} ${action.type}`
       setActionFeedback(feedbackText)
       setTimeout(() => setActionFeedback(null), 2000)

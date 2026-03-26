@@ -85,28 +85,18 @@ public class EventTests
     }
 
     [Fact]
-    public void FreeThrowEvent_WithValidData_Succeeds()
+    public void TurnoverEvent_WithValidData_Succeeds()
     {
         // Act
-        var freeThrowEvent = new FreeThrowEvent("team-1", "player-1", true, FoulType.Personal, PeriodNumber.One, 150);
+        var turnoverEvent = new TurnoverEvent("team-1", "player-1", PeriodNumber.One, 150);
 
         // Assert
-        Assert.NotNull(freeThrowEvent.Id);
-        Assert.Equal(EventType.FreeThrow, freeThrowEvent.Type);
-        Assert.True(freeThrowEvent.Made);
-        Assert.Equal(FoulType.Personal, freeThrowEvent.FoulType);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void FreeThrowEvent_WithMadeAndMissed_Succeeds(bool made)
-    {
-        // Act
-        var freeThrowEvent = new FreeThrowEvent("team-1", "player-1", made, FoulType.Technical, PeriodNumber.Two, 300);
-
-        // Assert
-        Assert.Equal(made, freeThrowEvent.Made);
+        Assert.NotNull(turnoverEvent.Id);
+        Assert.Equal(EventType.Turnover, turnoverEvent.Type);
+        Assert.Equal("team-1", turnoverEvent.TeamId);
+        Assert.Equal("player-1", turnoverEvent.PlayerId);
+        Assert.Equal(PeriodNumber.One, turnoverEvent.PeriodNumber);
+        Assert.Equal(150, turnoverEvent.PeriodTimestamp);
     }
 
     [Fact]
@@ -170,7 +160,7 @@ public class EventTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => 
-            new FreeThrowEvent(teamId, "player-1", true, FoulType.Personal, PeriodNumber.One, 100));
+            new TurnoverEvent(teamId, "player-1", PeriodNumber.One, 100));
     }
 
     [Theory]
@@ -180,7 +170,7 @@ public class EventTests
     {
         // Act & Assert
         Assert.Throws<ArgumentException>(() => 
-            new FreeThrowEvent("team-1", playerId, true, FoulType.Personal, PeriodNumber.One, 100));
+            new TurnoverEvent("team-1", playerId, PeriodNumber.One, 100));
     }
 
     [Theory]

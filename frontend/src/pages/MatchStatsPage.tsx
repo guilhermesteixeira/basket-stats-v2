@@ -47,16 +47,11 @@ export function MatchStatsPage() {
       if (isHome) periodScores[event.periodNumber].home += event.points
       else periodScores[event.periodNumber].away += event.points
     }
-    if (event.type === 'FreeThrow' && event.made) {
-      const isHome = event.teamId === match.homeTeam.teamId
-      if (isHome) periodScores[event.periodNumber].home += 1
-      else periodScores[event.periodNumber].away += 1
-    }
   }
 
   // Build points-over-time data
   const timelineEvents = [...match.events]
-    .filter((e) => e.type === 'Score' || (e.type === 'FreeThrow' && e.made))
+    .filter((e) => e.type === 'Score')
     .sort((a, b) => {
       const aTime = (a.periodNumber - 1) * 600 + a.periodTimestamp
       const bTime = (b.periodNumber - 1) * 600 + b.periodTimestamp
@@ -69,14 +64,14 @@ export function MatchStatsPage() {
 
   for (const event of timelineEvents) {
     const time = (event.periodNumber - 1) * 600 + event.periodTimestamp
-    const pts = event.type === 'Score' ? (event.points ?? 2) : 1
+    const pts = event.points ?? 2
     if (event.teamId === match.homeTeam.teamId) homeRunning += pts
     else awayRunning += pts
     timelineData.push({ time, home: homeRunning, away: awayRunning })
   }
 
   // Build event type breakdown
-  const eventTypes = ['Score', 'MissedShot', 'FreeThrow', 'Foul', 'Substitution']
+  const eventTypes = ['Score', 'MissedShot', 'Foul', 'Substitution', 'Turnover']
   const breakdownData = eventTypes.map((type) => {
     const homeCount = match.events.filter(
       (e: MatchEvent) => e.type === type && e.teamId === match.homeTeam.teamId,

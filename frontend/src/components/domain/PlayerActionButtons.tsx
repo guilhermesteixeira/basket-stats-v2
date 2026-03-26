@@ -5,7 +5,7 @@ import { CourtMap } from './CourtMap'
 type ActionType =
   | { kind: 'score'; points: 2 | 3 }
   | { kind: 'missed' }
-  | { kind: 'freeThrow'; made: boolean }
+  | { kind: 'turnover' }
   | { kind: 'foul'; foulType: string; flagrant: boolean }
   | { kind: 'subOut' }
 
@@ -21,7 +21,6 @@ interface PlayerActionButtonsProps {
     points?: number
     coordinatesX?: number
     coordinatesY?: number
-    made?: boolean
     foulType?: string
     flagrant?: boolean
     playerFouledId?: string
@@ -59,14 +58,14 @@ export function PlayerActionButtons({
       setPendingAction(action)
       return
     }
-    // FreeThrow — submit directly
-    onAction({
-      type: 'FreeThrow',
-      teamId,
-      playerId: player.id,
-      made: action.made,
-      foulType: 'Personal',
-    })
+    // Turnover — submit directly
+    if (action.kind === 'turnover') {
+      onAction({
+        type: 'Turnover',
+        teamId,
+        playerId: player.id,
+      })
+    }
   }
 
   const confirmShotAction = () => {
@@ -240,16 +239,10 @@ export function PlayerActionButtons({
           MISS
         </button>
         <button
-          onClick={() => handleQuickAction({ kind: 'freeThrow', made: true })}
-          className="bg-blue-700 hover:bg-blue-600 text-white py-2.5 rounded text-sm font-bold"
+          onClick={() => handleQuickAction({ kind: 'turnover' })}
+          className="bg-purple-700 hover:bg-purple-600 text-white py-2.5 rounded text-sm font-bold"
         >
-          FT ✓
-        </button>
-        <button
-          onClick={() => handleQuickAction({ kind: 'freeThrow', made: false })}
-          className="bg-blue-900 hover:bg-blue-800 text-white py-2.5 rounded text-sm font-bold"
-        >
-          FT ✗
+          TO
         </button>
         <button
           onClick={() => handleQuickAction({ kind: 'foul', foulType: 'Personal', flagrant: false })}

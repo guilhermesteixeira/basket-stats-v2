@@ -1,5 +1,5 @@
 export type MatchStatus = 'Scheduled' | 'Active' | 'Finished'
-export type EventType = 'Score' | 'MissedShot' | 'FreeThrow' | 'Foul' | 'Substitution'
+export type EventType = 'Score' | 'MissedShot' | 'Foul' | 'Substitution' | 'Turnover'
 
 export interface Coordinates {
   x: number
@@ -30,7 +30,6 @@ export interface PlayerInput {
 
 export interface EventDetails {
   points?: number
-  made?: boolean
   foulType?: string
   playerId?: string
   playerFouledId?: string
@@ -50,7 +49,6 @@ export interface MatchEvent {
   points?: number
   coordinatesX?: number
   coordinatesY?: number
-  made?: boolean
   foulType?: string
   playerFouledId?: string
   flagrant?: boolean
@@ -100,7 +98,6 @@ export interface AddEventRequest {
   coordinatesX?: number
   coordinatesY?: number
   points?: number
-  made?: boolean
   foulType?: string
   playerFouledId?: string
   flagrant?: boolean

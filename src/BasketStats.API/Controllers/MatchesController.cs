@@ -101,7 +101,6 @@ public class MatchesController(IMediator mediator) : ControllerBase
                 CoordinatesX = request.CoordinatesX,
                 CoordinatesY = request.CoordinatesY,
                 Points = request.Points,
-                Made = request.Made,
                 FoulType = request.FoulType,
                 PlayerFouledId = request.PlayerFouledId,
                 Flagrant = request.Flagrant,
