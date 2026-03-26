@@ -10,8 +10,9 @@ using BasketStats.Domain.ValueObjects;
 public class GetMatchQueryHandlerTests
 {
     private readonly Mock<IMatchRepository> _matchRepo = new();
+    private readonly Mock<ITeamRepository> _teamRepo = new();
 
-    private GetMatchQueryHandler CreateHandler() => new(_matchRepo.Object);
+    private GetMatchQueryHandler CreateHandler() => new(_matchRepo.Object, _teamRepo.Object);
 
     // TC-MATCH-006: Retrieve existing match by ID
     [Fact]

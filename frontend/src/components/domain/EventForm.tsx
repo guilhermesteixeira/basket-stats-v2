@@ -26,22 +26,43 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const finalDetails: EventDetails = { ...details }
-    if (eventType === 'Score' || eventType === 'MissedShot') {
-      finalDetails.coordinates = coords
+    const req = {
+      type: eventType,
+      teamId,
+      periodNumber,
+      periodTimestamp,
+      playerId: eventType === 'Substitution' ? details.playerInId : details.playerId,
+      ...(eventType === 'Score' && {
+        points: details.points,
+        coordinatesX: coords?.x,
+        coordinatesY: coords?.y,
+      }),
+      ...(eventType === 'MissedShot' && {
+        coordinatesX: coords?.x,
+        coordinatesY: coords?.y,
+      }),
+      ...(eventType === 'FreeThrow' && {
+        made: details.made,
+        foulType: details.foulType,
+      }),
+      ...(eventType === 'Foul' && {
+        foulType: details.foulType,
+        playerFouledId: details.playerFouledId,
+        flagrant: details.flagrant,
+      }),
+      ...(eventType === 'Substitution' && {
+        playerOutId: details.playerOutId,
+      }),
     }
 
-    mutate(
-      { type: eventType, teamId, periodNumber, periodTimestamp, details: finalDetails },
-      {
-        onSuccess: () => {
-          setDetails({})
-          setCoords(undefined)
-          onSuccess()
-          setTimeout(reset, 2000)
-        },
+    mutate(req, {
+      onSuccess: () => {
+        setDetails({})
+        setCoords(undefined)
+        onSuccess()
+        setTimeout(reset, 2000)
       },
-    )
+    })
   }
 
   const needsCoords = eventType === 'Score' || eventType === 'MissedShot'
@@ -109,8 +130,8 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
               <label className="block text-xs text-slate-400 mb-1">Player</label>
               <input
                 type="text"
-                value={details.playerName ?? ''}
-                onChange={(e) => setDetails((d) => ({ ...d, playerName: e.target.value }))}
+                value={details.playerId ?? ''}
+                onChange={(e) => setDetails((d) => ({ ...d, playerId: e.target.value }))}
                 placeholder="Player name"
                 className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
               />
@@ -124,8 +145,8 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
           <label className="block text-xs text-slate-400 mb-1">Player</label>
           <input
             type="text"
-            value={details.playerName ?? ''}
-            onChange={(e) => setDetails((d) => ({ ...d, playerName: e.target.value }))}
+            value={details.playerId ?? ''}
+            onChange={(e) => setDetails((d) => ({ ...d, playerId: e.target.value }))}
             placeholder="Player name"
             className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
           />
@@ -148,21 +169,21 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
           <div>
             <label className="block text-xs text-slate-400 mb-1">Foul Type</label>
             <select
-              value={details.foulType ?? 'personal'}
-              onChange={(e) => setDetails((d) => ({ ...d, foulType: e.target.value as EventDetails['foulType'] }))}
+              value={details.foulType ?? 'Personal'}
+              onChange={(e) => setDetails((d) => ({ ...d, foulType: e.target.value }))}
               className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
             >
-              <option value="personal">Personal</option>
-              <option value="technical">Technical</option>
-              <option value="flagrant">Flagrant</option>
+              <option value="Personal">Personal</option>
+              <option value="Technical">Technical</option>
+              <option value="Flagrant">Flagrant</option>
             </select>
           </div>
           <div className="col-span-2">
             <label className="block text-xs text-slate-400 mb-1">Player</label>
             <input
               type="text"
-              value={details.playerName ?? ''}
-              onChange={(e) => setDetails((d) => ({ ...d, playerName: e.target.value }))}
+              value={details.playerId ?? ''}
+              onChange={(e) => setDetails((d) => ({ ...d, playerId: e.target.value }))}
               placeholder="Player name"
               className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
             />
@@ -176,21 +197,21 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
             <div>
               <label className="block text-xs text-slate-400 mb-1">Foul Type</label>
               <select
-                value={details.foulType ?? 'personal'}
-                onChange={(e) => setDetails((d) => ({ ...d, foulType: e.target.value as EventDetails['foulType'] }))}
+                value={details.foulType ?? 'Personal'}
+                onChange={(e) => setDetails((d) => ({ ...d, foulType: e.target.value }))}
                 className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
               >
-                <option value="personal">Personal</option>
-                <option value="technical">Technical</option>
-                <option value="flagrant">Flagrant</option>
+                <option value="Personal">Personal</option>
+                <option value="Technical">Technical</option>
+                <option value="Flagrant">Flagrant</option>
               </select>
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Player Fouled</label>
               <input
                 type="text"
-                value={details.playerFouled ?? ''}
-                onChange={(e) => setDetails((d) => ({ ...d, playerFouled: e.target.value }))}
+                value={details.playerFouledId ?? ''}
+                onChange={(e) => setDetails((d) => ({ ...d, playerFouledId: e.target.value }))}
                 placeholder="Name"
                 className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
               />
@@ -214,8 +235,8 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
             <label className="block text-xs text-slate-400 mb-1">Player In</label>
             <input
               type="text"
-              value={details.playerIn ?? ''}
-              onChange={(e) => setDetails((d) => ({ ...d, playerIn: e.target.value }))}
+              value={details.playerInId ?? ''}
+              onChange={(e) => setDetails((d) => ({ ...d, playerInId: e.target.value }))}
               placeholder="Entering"
               className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
             />
@@ -224,8 +245,8 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
             <label className="block text-xs text-slate-400 mb-1">Player Out</label>
             <input
               type="text"
-              value={details.playerOut ?? ''}
-              onChange={(e) => setDetails((d) => ({ ...d, playerOut: e.target.value }))}
+              value={details.playerOutId ?? ''}
+              onChange={(e) => setDetails((d) => ({ ...d, playerOutId: e.target.value }))}
               placeholder="Leaving"
               className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
             />

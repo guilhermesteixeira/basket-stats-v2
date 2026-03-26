@@ -19,32 +19,38 @@ export interface MatchTeam {
 
 export interface EventDetails {
   points?: number
-  coordinates?: Coordinates
   made?: boolean
-  foulType?: 'personal' | 'technical' | 'flagrant'
-  playerName?: string
-  playerFouled?: string
+  foulType?: string
+  playerId?: string
+  playerFouledId?: string
   flagrant?: boolean
-  playerIn?: string
-  playerOut?: string
+  playerInId?: string
+  playerOutId?: string
 }
 
 export interface MatchEvent {
   id: string
+  teamId: string
+  playerId?: string
+  type: string
   timestamp: string
   periodNumber: number
   periodTimestamp: number
-  type: EventType
-  teamId: string
-  playerId?: string
-  details: EventDetails
+  points?: number
+  coordinatesX?: number
+  coordinatesY?: number
+  made?: boolean
+  foulType?: string
+  playerFouledId?: string
+  flagrant?: boolean
+  playerOutId?: string
 }
 
 export interface Period {
   number: number
   startTime?: string
   endTime?: string
-  duration?: number
+  durationSeconds?: number
 }
 
 export interface Match {
@@ -71,12 +77,19 @@ export interface CreateTeamRequest {
 }
 
 export interface AddEventRequest {
-  type: EventType
+  type: string
   teamId: string
   periodNumber: number
   periodTimestamp: number
   playerId?: string
-  details: EventDetails
+  coordinatesX?: number
+  coordinatesY?: number
+  points?: number
+  made?: boolean
+  foulType?: string
+  playerFouledId?: string
+  flagrant?: boolean
+  playerOutId?: string
 }
 
 export interface UserProfile {

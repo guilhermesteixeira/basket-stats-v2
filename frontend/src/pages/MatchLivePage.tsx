@@ -152,11 +152,11 @@ export function MatchLivePage() {
                     {teamName}
                   </span>
                   <span className="text-white">{event.type}</span>
-                  {event.details.points && (
-                    <span className="text-green-400">+{event.details.points}</span>
+                  {event.points && (
+                    <span className="text-green-400">+{event.points}</span>
                   )}
-                  {event.details.playerName && (
-                    <span className="text-slate-300">({event.details.playerName})</span>
+                  {event.playerId && (
+                    <span className="text-slate-300">({event.playerId})</span>
                   )}
                 </li>
               )

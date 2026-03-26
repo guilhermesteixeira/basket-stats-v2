@@ -42,12 +42,12 @@ export function MatchStatsPage() {
     if (!periodScores[event.periodNumber]) {
       periodScores[event.periodNumber] = { home: 0, away: 0 }
     }
-    if (event.type === 'Score' && event.details.points) {
+    if (event.type === 'Score' && event.points) {
       const isHome = event.teamId === match.homeTeam.teamId
-      if (isHome) periodScores[event.periodNumber].home += event.details.points
-      else periodScores[event.periodNumber].away += event.details.points
+      if (isHome) periodScores[event.periodNumber].home += event.points
+      else periodScores[event.periodNumber].away += event.points
     }
-    if (event.type === 'FreeThrow' && event.details.made) {
+    if (event.type === 'FreeThrow' && event.made) {
       const isHome = event.teamId === match.homeTeam.teamId
       if (isHome) periodScores[event.periodNumber].home += 1
       else periodScores[event.periodNumber].away += 1
@@ -56,7 +56,7 @@ export function MatchStatsPage() {
 
   // Build points-over-time data
   const timelineEvents = [...match.events]
-    .filter((e) => e.type === 'Score' || (e.type === 'FreeThrow' && e.details.made))
+    .filter((e) => e.type === 'Score' || (e.type === 'FreeThrow' && e.made))
     .sort((a, b) => {
       const aTime = (a.periodNumber - 1) * 600 + a.periodTimestamp
       const bTime = (b.periodNumber - 1) * 600 + b.periodTimestamp
@@ -69,7 +69,7 @@ export function MatchStatsPage() {
 
   for (const event of timelineEvents) {
     const time = (event.periodNumber - 1) * 600 + event.periodTimestamp
-    const pts = event.type === 'Score' ? (event.details.points ?? 2) : 1
+    const pts = event.type === 'Score' ? (event.points ?? 2) : 1
     if (event.teamId === match.homeTeam.teamId) homeRunning += pts
     else awayRunning += pts
     timelineData.push({ time, home: homeRunning, away: awayRunning })

@@ -5,7 +5,7 @@ using BasketStats.Domain.Entities;
 
 public static class MatchMapper
 {
-    public static MatchDto ToDto(Match match)
+    public static MatchDto ToDto(Match match, string homeTeamName, string awayTeamName)
     {
         var homeScore = CalculateScore(match, match.HomeTeamId);
         var awayScore = CalculateScore(match, match.AwayTeamId);
@@ -13,17 +13,25 @@ public static class MatchMapper
         return new MatchDto
         {
             Id = match.Id.Value,
-            HomeTeamId = match.HomeTeamId,
-            AwayTeamId = match.AwayTeamId,
+            HomeTeam = new MatchTeamDto(match.HomeTeamId, homeTeamName),
+            AwayTeam = new MatchTeamDto(match.AwayTeamId, awayTeamName),
             Status = match.Status.ToString(),
             CreatedAt = match.CreatedAt,
             StartedAt = match.StartedAt,
             FinishedAt = match.FinishedAt,
             Events = match.Events.Select(ToDto).ToList(),
+            Periods = match.Periods.Select(p => new PeriodDto(
+                (int)p.Number,
+                p.StartTime,
+                p.EndTime,
+                p.EndTime.HasValue ? (int)(p.EndTime.Value - p.StartTime).TotalSeconds : null
+            )).ToList(),
             HomeScore = homeScore,
-            AwayScore = awayScore
+            AwayScore = awayScore,
         };
     }
+
+    public static MatchDto ToDto(Match match) => ToDto(match, match.HomeTeamId, match.AwayTeamId);
 
     public static EventDto ToDto(Event @event)
     {

@@ -52,7 +52,7 @@ public class MatchesControllerTests
     public async Task GetMatch_ExistingMatch_Returns200WithMatchDto()
     {
         // Arrange
-        var dto = new MatchDto { Id = "match-1", HomeTeamId = "home-1", AwayTeamId = "away-1", Status = "Scheduled" };
+        var dto = new MatchDto { Id = "match-1", HomeTeam = new MatchTeamDto("home-1", "home-1"), AwayTeam = new MatchTeamDto("away-1", "away-1"), Status = "Scheduled" };
         _mediator.Setup(m => m.Send(It.IsAny<GetMatchQuery>(), default)).ReturnsAsync(dto);
 
         // Act
@@ -98,7 +98,7 @@ public class MatchesControllerTests
     public async Task ListMatches_WithTeamFilter_PassesTeamIdToQuery()
     {
         // Arrange
-        var list = new List<MatchDto> { new() { Id = "m1", HomeTeamId = "team-1" } };
+        var list = new List<MatchDto> { new() { Id = "m1", HomeTeam = new MatchTeamDto("team-1", "team-1") } };
         _mediator.Setup(m => m.Send(
             It.Is<ListMatchesQuery>(q => q.TeamId == "team-1"),
             default)).ReturnsAsync(list);

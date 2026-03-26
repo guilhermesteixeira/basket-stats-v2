@@ -17,7 +17,11 @@ try
         .ReadFrom.Configuration(ctx.Configuration)
         .WriteTo.Console());
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(opts =>
+        {
+            opts.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        });
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 

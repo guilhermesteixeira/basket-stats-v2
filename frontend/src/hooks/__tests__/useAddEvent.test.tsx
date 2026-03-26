@@ -26,7 +26,7 @@ const sampleRequest: AddEventRequest = {
   teamId: 'team-1',
   periodNumber: 1,
   periodTimestamp: 30,
-  details: { points: 2 },
+  points: 2,
 }
 
 describe('useAddEvent', () => {
@@ -43,7 +43,7 @@ describe('useAddEvent', () => {
       periodNumber: 1,
       periodTimestamp: 30,
       timestamp: '',
-      details: { points: 2 },
+      points: 2,
     })
 
     const { result } = renderHook(() => useAddEvent('match-1'), { wrapper })

@@ -40,7 +40,7 @@ public class MatchesController(IMediator mediator) : ControllerBase
         return Ok(list);
     }
 
-    [HttpPut("{id}/start")]
+    [HttpPost("{id}/start")]
     public async Task<IActionResult> StartMatch(string id, CancellationToken ct)
     {
         try
@@ -59,7 +59,7 @@ public class MatchesController(IMediator mediator) : ControllerBase
         }
     }
 
-    [HttpPut("{id}/finish")]
+    [HttpPost("{id}/finish")]
     public async Task<IActionResult> FinishMatch(string id, CancellationToken ct)
     {
         try

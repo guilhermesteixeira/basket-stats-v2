@@ -98,7 +98,7 @@ Accept: application/json
 
 ### ── Step 11: Start match ────────────────────────────────────────────────────
 
-PUT {{host}}/api/matches/{{matchId}}/start
+POST {{host}}/api/matches/{{matchId}}/start
 Authorization: Bearer {{token}}
 
 ### ── Step 12: Add Score event (2pts) ────────────────────────────────────────
@@ -201,7 +201,7 @@ Content-Type: application/json
 
 ### ── Step 18: Finish match ───────────────────────────────────────────────────
 
-PUT {{host}}/api/matches/{{matchId}}/finish
+POST {{host}}/api/matches/{{matchId}}/finish
 Authorization: Bearer {{token}}
 
 ### ── Step 19: Get final match state ─────────────────────────────────────────
