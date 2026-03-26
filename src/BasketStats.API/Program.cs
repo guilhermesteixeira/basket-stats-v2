@@ -17,9 +17,27 @@ try
         .ReadFrom.Configuration(ctx.Configuration)
         .WriteTo.Console());
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(opts =>
+        {
+            opts.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        });
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+    });
 
     builder.Services.AddSwaggerGen(options =>
     {
@@ -81,6 +99,7 @@ try
     }
 
     app.UseSerilogRequestLogging();
+    app.UseCors();
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();

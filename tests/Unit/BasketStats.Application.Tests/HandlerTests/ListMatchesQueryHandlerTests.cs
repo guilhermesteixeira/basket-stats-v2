@@ -9,8 +9,9 @@ using BasketStats.Domain.Enums;
 public class ListMatchesQueryHandlerTests
 {
     private readonly Mock<IMatchRepository> _matchRepo = new();
+    private readonly Mock<ITeamRepository> _teamRepo = new();
 
-    private ListMatchesQueryHandler CreateHandler() => new(_matchRepo.Object);
+    private ListMatchesQueryHandler CreateHandler() => new(_matchRepo.Object, _teamRepo.Object);
 
     [Fact]
     public async Task Handle_NoFilters_ReturnsAllMatches()
@@ -22,6 +23,7 @@ public class ListMatchesQueryHandlerTests
             DomainMatch.Create("home-2", "away-2")
         };
         _matchRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(matches);
+        _teamRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(new List<BasketStats.Domain.Entities.Team>());
 
         // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(), default);
@@ -37,6 +39,7 @@ public class ListMatchesQueryHandlerTests
         // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         _matchRepo.Setup(r => r.GetByTeamAsync("home-1", default)).ReturnsAsync(new List<DomainMatch> { match });
+        _teamRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(new List<BasketStats.Domain.Entities.Team>());
 
         // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(TeamId: "home-1"), default);
@@ -56,6 +59,7 @@ public class ListMatchesQueryHandlerTests
         active.Start();
 
         _matchRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(new List<DomainMatch> { scheduled, active });
+        _teamRepo.Setup(r => r.GetAllAsync(default)).ReturnsAsync(new List<BasketStats.Domain.Entities.Team>());
 
         // Act
         var result = await CreateHandler().Handle(new ListMatchesQuery(Status: MatchStatus.Active), default);

@@ -24,6 +24,216 @@ grant_type=password&client_id={{client_id}}&username={{username}}&password={{pas
   client.global.set("token", response.body.access_token);
 %}
 
+### ── Step 2: Register user (reads info from JWT - idempotent) ───────────────
+
+POST {{host}}/api/users/register
+Authorization: Bearer {{token}}
+
+> {%
+  client.global.set("userId", response.body.id);
+%}
+
+### ── Step 3: List teams ──────────────────────────────────────────────────────
+
+GET {{host}}/api/teams
+Accept: application/json
+
+### ── Step 4: Create home team ───────────────────────────────────────────────
+
+POST {{host}}/api/teams
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Lakers"
+}
+
+> {%
+  client.global.set("homeTeamId", response.body.id);
+%}
+
+### ── Step 6: Create away team ───────────────────────────────────────────────
+
+POST {{host}}/api/teams
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Celtics"
+}
+
+> {%
+  client.global.set("awayTeamId", response.body.id);
+%}
+
+### ── Step 7: Create match ────────────────────────────────────────────────────
+
+POST {{host}}/api/matches
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "homeTeamId": "{{homeTeamId}}",
+  "awayTeamId": "{{awayTeamId}}"
+}
+
+> {%
+  client.global.set("matchId", response.body.id);
+%}
+
+### ── Step 8: Get match by ID ─────────────────────────────────────────────────
+
+GET {{host}}/api/matches/{{matchId}}
+Accept: application/json
+
+### ── Step 9: List all matches ───────────────────────────────────────────────
+
+GET {{host}}/api/matches
+Accept: application/json
+
+### ── Step 10: List matches filtered by team ──────────────────────────────────
+
+GET {{host}}/api/matches?teamId={{homeTeamId}}
+Accept: application/json
+
+### ── Step 11: Start match ────────────────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/start
+Authorization: Bearer {{token}}
+
+### ── Step 12: Add Score event (2pts) ────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{homeTeamId}}",
+  "playerId": "lebron-james",
+  "type": 1,
+  "periodNumber": 1,
+  "periodTimestamp": 45,
+  "points": 2,
+  "coordinatesX": 48.5,
+  "coordinatesY": 12.3
+}
+
+### ── Step 13: Add Score event (3pts) ────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{awayTeamId}}",
+  "playerId": "jayson-tatum",
+  "type": 1,
+  "periodNumber": 1,
+  "periodTimestamp": 90,
+  "points": 3,
+  "coordinatesX": 5.0,
+  "coordinatesY": 25.0
+}
+
+### ── Step 14: Add Missed Shot event ─────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{homeTeamId}}",
+  "playerId": "anthony-davis",
+  "type": 2,
+  "periodNumber": 1,
+  "periodTimestamp": 120,
+  "coordinatesX": 50.0,
+  "coordinatesY": 5.0
+}
+
+### ── Step 15: Add Foul event ────────────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{awayTeamId}}",
+  "playerId": "jaylen-brown",
+  "type": 4,
+  "periodNumber": 1,
+  "periodTimestamp": 150,
+  "foulType": 1,
+  "playerFouledId": "lebron-james",
+  "flagrant": false
+}
+
+### ── Step 16: Add Free Throw event (made) ───────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{homeTeamId}}",
+  "playerId": "lebron-james",
+  "type": 3,
+  "periodNumber": 1,
+  "periodTimestamp": 155,
+  "made": true,
+  "foulType": 1
+}
+
+### ── Step 17: Add Substitution event ────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "teamId": "{{homeTeamId}}",
+  "playerId": "austin-reaves",
+  "type": 5,
+  "periodNumber": 2,
+  "periodTimestamp": 30,
+  "playerOutId": "lebron-james"
+}
+
+### ── Step 18: Finish match ───────────────────────────────────────────────────
+
+POST {{host}}/api/matches/{{matchId}}/finish
+Authorization: Bearer {{token}}
+
+### ── Step 19: Get final match state ─────────────────────────────────────────
+
+GET {{host}}/api/matches/{{matchId}}
+Accept: application/json
+
+### Requires: docker-compose up (Keycloak at :8080, API at :5273)
+###
+### Enum reference:
+###   EventType:   1=Score, 2=MissedShot, 3=FreeThrow, 4=Foul, 5=Substitution
+###   PeriodNumber: 1=One, 2=Two, 3=Three, 4=Four
+###   FoulType:    1=Personal, 2=Technical, 3=Flagrant
+
+@host = http://localhost:5273
+@keycloak = http://localhost:8080
+@realm = basket-stats
+@client_id = basket-stats-api
+@username = admin@basketstats.com
+@password = admin123
+
+# ── Step 1: Get JWT token from Keycloak ──────────────────────────────────────
+
+POST {{keycloak}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{client_id}}&username={{username}}&password={{password}}
+
+> {%
+  client.global.set("token", response.body.access_token);
+%}
+
 ### ── Step 2: Get Keycloak user info (to obtain sub/keycloakId) ──────────────
 
 GET {{keycloak}}/realms/{{realm}}/protocol/openid-connect/userinfo
