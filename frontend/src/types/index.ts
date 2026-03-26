@@ -81,7 +81,4 @@ export interface AddEventRequest {
 
 export interface UserProfile {
   id: string
-  email: string
-  keycloakId: string
-  roles: string[]
 }

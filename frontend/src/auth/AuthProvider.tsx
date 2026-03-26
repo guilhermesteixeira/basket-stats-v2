@@ -8,6 +8,7 @@ interface AuthState {
   token: string
   userRoles: string[]
   userId: string
+  internalUserId: string
 }
 
 const AuthContext = createContext<AuthState>({
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthState>({
   token: '',
   userRoles: [],
   userId: '',
+  internalUserId: '',
 })
 
 export function useAuthStore(): AuthState {
@@ -32,6 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token: '',
     userRoles: [],
     userId: '',
+    internalUserId: '',
   })
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -43,11 +46,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const userId = keycloak.subject ?? ''
 
         setAuthToken(token)
-        setAuthState({ authenticated: true, token, userRoles: roles, userId })
+        setAuthState({ authenticated: true, token, userRoles: roles, userId, internalUserId: '' })
 
-        registerUser().catch((err: unknown) => {
-          console.warn('User registration failed (may already exist)', err)
-        })
+        registerUser()
+          .then((profile) => {
+            setAuthState((prev) => ({ ...prev, internalUserId: profile.id }))
+          })
+          .catch((err: unknown) => {
+            console.warn('User registration failed (may already exist)', err)
+          })
 
         refreshIntervalRef.current = setInterval(() => {
           keycloak.updateToken(70).then((refreshed) => {
