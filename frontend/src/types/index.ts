@@ -17,6 +17,17 @@ export interface MatchTeam {
   teamName: string
 }
 
+export interface Player {
+  id: string
+  name: string
+  number: number
+}
+
+export interface PlayerInput {
+  name: string
+  number: number
+}
+
 export interface EventDetails {
   points?: number
   made?: boolean
@@ -65,11 +76,15 @@ export interface Match {
   periods: Period[]
   homeScore: number
   awayScore: number
+  homePlayers: Player[]
+  awayPlayers: Player[]
 }
 
 export interface CreateMatchRequest {
   homeTeamId: string
   awayTeamId: string
+  homePlayers?: PlayerInput[]
+  awayPlayers?: PlayerInput[]
 }
 
 export interface CreateTeamRequest {
