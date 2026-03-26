@@ -140,6 +140,7 @@ export function MatchLivePage() {
       <div className="bg-slate-800 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
+            <Link to="/" className="text-slate-400 hover:text-white transition-colors text-sm">← Back</Link>
             <Badge status={match.status} />
             {isSyncing && (
               <span className="text-xs text-blue-400 flex items-center gap-1">
