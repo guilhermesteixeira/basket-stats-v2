@@ -17,6 +17,14 @@ public class FirestoreTeamRepository(FirestoreDb db) : ITeamRepository
         return TeamFirestoreMapper.ToDomain(doc.ConvertTo<TeamDocument>());
     }
 
+    public async Task<List<Team>> GetAllAsync(CancellationToken ct = default)
+    {
+        var snapshot = await db.Collection(Collection).GetSnapshotAsync(ct);
+        return snapshot.Documents
+            .Select(d => TeamFirestoreMapper.ToDomain(d.ConvertTo<TeamDocument>()))
+            .ToList();
+    }
+
     public async Task<List<Team>> GetByOwnerAsync(string ownerId, CancellationToken ct = default)
     {
         var all = await GetAllAsync(ct);
@@ -32,13 +40,5 @@ public class FirestoreTeamRepository(FirestoreDb db) : ITeamRepository
     public async Task DeleteAsync(string id, CancellationToken ct = default)
     {
         await db.Collection(Collection).Document(id).DeleteAsync(cancellationToken: ct);
-    }
-
-    private async Task<List<Team>> GetAllAsync(CancellationToken ct = default)
-    {
-        var snapshot = await db.Collection(Collection).GetSnapshotAsync(ct);
-        return snapshot.Documents
-            .Select(d => TeamFirestoreMapper.ToDomain(d.ConvertTo<TeamDocument>()))
-            .ToList();
     }
 }

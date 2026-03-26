@@ -7,12 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 using BasketStats.API.Requests;
 using BasketStats.Application.Commands;
 using BasketStats.Application.Exceptions;
+using BasketStats.Application.Queries;
 
 [Authorize]
 [ApiController]
 [Route("api/teams")]
 public class TeamsController(IMediator mediator) : ControllerBase
 {
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> ListTeams(CancellationToken ct)
+    {
+        var teams = await mediator.Send(new ListTeamsQuery(), ct);
+        return Ok(teams);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateTeam([FromBody] CreateTeamRequest request, CancellationToken ct)
     {
