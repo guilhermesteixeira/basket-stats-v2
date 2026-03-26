@@ -21,6 +21,20 @@ try
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+    });
+
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new OpenApiInfo
@@ -81,6 +95,7 @@ try
     }
 
     app.UseSerilogRequestLogging();
+    app.UseCors();
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
