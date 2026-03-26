@@ -19,7 +19,12 @@ public class MatchesController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> CreateMatch([FromBody] CreateMatchRequest request, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
-        var command = new CreateMatchCommand(request.HomeTeamId, request.AwayTeamId, userId);
+        var command = new CreateMatchCommand(
+            request.HomeTeamId,
+            request.AwayTeamId,
+            userId,
+            request.HomePlayers?.Select(p => new PlayerInput(p.Name, p.Number)).ToList(),
+            request.AwayPlayers?.Select(p => new PlayerInput(p.Name, p.Number)).ToList());
         var matchId = await mediator.Send(command, ct);
         return CreatedAtAction(nameof(GetMatch), new { id = matchId }, new { id = matchId });
     }

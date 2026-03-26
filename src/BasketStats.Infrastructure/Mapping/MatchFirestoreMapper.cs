@@ -20,7 +20,9 @@ public static class MatchFirestoreMapper
             StartedAt = match.StartedAt,
             FinishedAt = match.FinishedAt,
             Events = match.Events.Select(ToEventDocument).ToList(),
-            Periods = match.Periods.Select(ToPeriodDocument).ToList()
+            Periods = match.Periods.Select(ToPeriodDocument).ToList(),
+            HomePlayers = match.HomePlayers.Select(p => new PlayerDocument { Id = p.Id, Name = p.Name, Number = p.Number }).ToList(),
+            AwayPlayers = match.AwayPlayers.Select(p => new PlayerDocument { Id = p.Id, Name = p.Name, Number = p.Number }).ToList()
         };
     }
 
@@ -55,6 +57,16 @@ public static class MatchFirestoreMapper
         periodsList.Clear();
         foreach (var periodDoc in doc.Periods)
             periodsList.Add(ToPeriodDomain(periodDoc));
+
+        var homePlayersField = typeof(Match).GetField("_homePlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var homePlayersList = (List<PlayerInfo>)homePlayersField.GetValue(match)!;
+        foreach (var pd in doc.HomePlayers)
+            homePlayersList.Add(PlayerInfo.Restore(pd.Id, pd.Name, pd.Number));
+
+        var awayPlayersField = typeof(Match).GetField("_awayPlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var awayPlayersList = (List<PlayerInfo>)awayPlayersField.GetValue(match)!;
+        foreach (var pd in doc.AwayPlayers)
+            awayPlayersList.Add(PlayerInfo.Restore(pd.Id, pd.Name, pd.Number));
 
         return match;
     }

@@ -26,6 +26,8 @@ public static class MatchMapper
                 p.EndTime,
                 p.EndTime.HasValue ? (int)(p.EndTime.Value - p.StartTime).TotalSeconds : null
             )).ToList(),
+            HomePlayers = match.HomePlayers.Select(p => new PlayerDto(p.Id, p.Name, p.Number)).ToList(),
+            AwayPlayers = match.AwayPlayers.Select(p => new PlayerDto(p.Id, p.Name, p.Number)).ToList(),
             HomeScore = homeScore,
             AwayScore = awayScore,
         };
