@@ -6,7 +6,7 @@ using BasketStats.Domain.ValueObjects;
 public record AddEventRequest
 {
     public required string TeamId { get; init; }
-    public required string PlayerId { get; init; }
+    public string? PlayerId { get; init; }
     public required EventType Type { get; init; }
     public required PeriodNumber PeriodNumber { get; init; }
     public required int PeriodTimestamp { get; init; }

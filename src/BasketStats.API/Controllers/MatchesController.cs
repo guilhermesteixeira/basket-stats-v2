@@ -88,7 +88,7 @@ public class MatchesController(IMediator mediator) : ControllerBase
             {
                 MatchId = id,
                 TeamId = request.TeamId,
-                PlayerId = request.PlayerId,
+                PlayerId = request.PlayerId ?? string.Empty,
                 Type = request.Type,
                 PeriodNumber = request.PeriodNumber,
                 PeriodTimestamp = request.PeriodTimestamp,

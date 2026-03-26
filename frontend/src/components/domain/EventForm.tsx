@@ -19,39 +19,52 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
 
   const [eventType, setEventType] = useState<EventType>('Score')
   const [coords, setCoords] = useState<Coordinates | undefined>()
-  const [details, setDetails] = useState<EventDetails>({})
+  const [details, setDetails] = useState<EventDetails>({ points: 2 })
   const [periodNumber, setPeriodNumber] = useState(1)
   const [periodTimestamp, setPeriodTimestamp] = useState(0)
 
+  const handleTypeChange = (newType: EventType) => {
+    setEventType(newType)
+    setCoords(undefined)
+    // Reset with sensible defaults per type
+    setDetails(newType === 'Score' ? { points: 2 } : newType === 'FreeThrow' ? { made: true, foulType: 'Personal' } : newType === 'Foul' ? { foulType: 'Personal', flagrant: false } : {})
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate coordinates for shot events
+    if ((eventType === 'Score' || eventType === 'MissedShot') && !coords) {
+      alert('Please select the shot location on the court.')
+      return
+    }
 
     const req = {
       type: eventType,
       teamId,
       periodNumber,
       periodTimestamp,
-      playerId: eventType === 'Substitution' ? details.playerInId : details.playerId,
+      playerId: (eventType === 'Substitution' ? details.playerInId : details.playerId) ?? '',
       ...(eventType === 'Score' && {
-        points: details.points,
-        coordinatesX: coords?.x,
-        coordinatesY: coords?.y,
+        points: details.points ?? 2,
+        coordinatesX: coords!.x,
+        coordinatesY: coords!.y,
       }),
       ...(eventType === 'MissedShot' && {
-        coordinatesX: coords?.x,
-        coordinatesY: coords?.y,
+        coordinatesX: coords!.x,
+        coordinatesY: coords!.y,
       }),
       ...(eventType === 'FreeThrow' && {
-        made: details.made,
-        foulType: details.foulType,
+        made: details.made ?? false,
+        foulType: details.foulType ?? 'Personal',
       }),
       ...(eventType === 'Foul' && {
-        foulType: details.foulType,
-        playerFouledId: details.playerFouledId,
-        flagrant: details.flagrant,
+        foulType: details.foulType ?? 'Personal',
+        playerFouledId: details.playerFouledId ?? '',
+        flagrant: details.flagrant ?? false,
       }),
       ...(eventType === 'Substitution' && {
-        playerOutId: details.playerOutId,
+        playerOutId: details.playerOutId ?? '',
       }),
     }
 
@@ -105,7 +118,7 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
         <label className="block text-xs text-slate-400 mb-1">Event Type</label>
         <select
           value={eventType}
-          onChange={(e) => { setEventType(e.target.value as EventType); setDetails({}); setCoords(undefined) }}
+          onChange={(e) => handleTypeChange(e.target.value as EventType)}
           className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
         >
           {EVENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
