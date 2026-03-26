@@ -13,7 +13,6 @@ public record AddEventRequest
     public decimal? CoordinatesX { get; init; }
     public decimal? CoordinatesY { get; init; }
     public int? Points { get; init; }
-    public bool? Made { get; init; }
     public FoulType? FoulType { get; init; }
     public string? PlayerFouledId { get; init; }
     public bool? Flagrant { get; init; }

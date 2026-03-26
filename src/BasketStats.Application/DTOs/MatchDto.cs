@@ -11,6 +11,8 @@ public class MatchDto
     public DateTime? FinishedAt { get; init; }
     public List<EventDto> Events { get; init; } = new();
     public List<PeriodDto> Periods { get; init; } = new();
+    public List<PlayerDto> HomePlayers { get; init; } = new();
+    public List<PlayerDto> AwayPlayers { get; init; } = new();
     public int HomeScore { get; init; }
     public int AwayScore { get; init; }
 }

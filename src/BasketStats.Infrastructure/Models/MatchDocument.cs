@@ -14,6 +14,8 @@ public class MatchDocument
     [FirestoreProperty] public DateTime? FinishedAt { get; set; }
     [FirestoreProperty] public List<EventDocument> Events { get; set; } = new();
     [FirestoreProperty] public List<PeriodDocument> Periods { get; set; } = new();
+    [FirestoreProperty] public List<PlayerDocument> HomePlayers { get; set; } = new();
+    [FirestoreProperty] public List<PlayerDocument> AwayPlayers { get; set; } = new();
 }
 
 [FirestoreData]
@@ -42,4 +44,12 @@ public class PeriodDocument
     [FirestoreProperty] public int Number { get; set; }
     [FirestoreProperty] public DateTime StartTime { get; set; }
     [FirestoreProperty] public DateTime? EndTime { get; set; }
+}
+
+[FirestoreData]
+public class PlayerDocument
+{
+    [FirestoreProperty] public string Id { get; set; } = "";
+    [FirestoreProperty] public string Name { get; set; } = "";
+    [FirestoreProperty] public int Number { get; set; }
 }

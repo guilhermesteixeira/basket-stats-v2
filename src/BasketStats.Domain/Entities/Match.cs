@@ -8,6 +8,8 @@ public class Match : Entity
 {
     private readonly List<Event> _events = new();
     private readonly List<Period> _periods = new();
+    private readonly List<PlayerInfo> _homePlayers = new();
+    private readonly List<PlayerInfo> _awayPlayers = new();
 
     public MatchId Id { get; private set; }
     public string HomeTeamId { get; private set; }
@@ -18,12 +20,15 @@ public class Match : Entity
     public DateTime? FinishedAt { get; private set; }
     public IReadOnlyList<Event> Events => _events.AsReadOnly();
     public IReadOnlyList<Period> Periods => _periods.AsReadOnly();
+    public IReadOnlyList<PlayerInfo> HomePlayers => _homePlayers.AsReadOnly();
+    public IReadOnlyList<PlayerInfo> AwayPlayers => _awayPlayers.AsReadOnly();
 
     private Match()
     {
     }
 
-    public static Match Create(string homeTeamId, string awayTeamId)
+    public static Match Create(string homeTeamId, string awayTeamId,
+        List<PlayerInfo>? homePlayers = null, List<PlayerInfo>? awayPlayers = null)
     {
         if (string.IsNullOrWhiteSpace(homeTeamId))
             throw new ArgumentException("Home team ID cannot be empty", nameof(homeTeamId));
@@ -48,6 +53,11 @@ public class Match : Entity
         {
             match._periods.Add(new Period((PeriodNumber)i, DateTime.UtcNow));
         }
+
+        if (homePlayers is not null)
+            match._homePlayers.AddRange(homePlayers);
+        if (awayPlayers is not null)
+            match._awayPlayers.AddRange(awayPlayers);
 
         return match;
     }

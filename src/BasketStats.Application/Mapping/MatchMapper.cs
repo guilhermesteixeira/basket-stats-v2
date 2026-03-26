@@ -26,6 +26,8 @@ public static class MatchMapper
                 p.EndTime,
                 p.EndTime.HasValue ? (int)(p.EndTime.Value - p.StartTime).TotalSeconds : null
             )).ToList(),
+            HomePlayers = match.HomePlayers.Select(p => new PlayerDto(p.Id, p.Name, p.Number)).ToList(),
+            AwayPlayers = match.AwayPlayers.Select(p => new PlayerDto(p.Id, p.Name, p.Number)).ToList(),
             HomeScore = homeScore,
             AwayScore = awayScore,
         };
@@ -57,10 +59,6 @@ public static class MatchMapper
                 dto.CoordinatesX = missed.Coordinates.X;
                 dto.CoordinatesY = missed.Coordinates.Y;
                 break;
-            case FreeThrowEvent freeThrow:
-                dto.Made = freeThrow.Made;
-                dto.FoulType = freeThrow.FoulType.ToString();
-                break;
             case FoulEvent foul:
                 dto.FoulType = foul.FoulType.ToString();
                 dto.PlayerFouledId = foul.PlayerFouledId;
@@ -69,6 +67,8 @@ public static class MatchMapper
             case SubstitutionEvent substitution:
                 dto.PlayerOutId = substitution.PlayerOutId;
                 break;
+            case TurnoverEvent:
+                break;
         }
 
         return dto;
@@ -76,16 +76,9 @@ public static class MatchMapper
 
     private static int CalculateScore(Match match, string teamId)
     {
-        var scorePoints = match.Events
+        return match.Events
             .OfType<ScoreEvent>()
             .Where(e => e.TeamId == teamId)
             .Sum(e => e.Points);
-
-        var freeThrowPoints = match.Events
-            .OfType<FreeThrowEvent>()
-            .Where(e => e.TeamId == teamId && e.Made)
-            .Count();
-
-        return scorePoints + freeThrowPoints;
     }
 }

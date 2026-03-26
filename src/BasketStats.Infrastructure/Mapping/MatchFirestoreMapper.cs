@@ -20,7 +20,9 @@ public static class MatchFirestoreMapper
             StartedAt = match.StartedAt,
             FinishedAt = match.FinishedAt,
             Events = match.Events.Select(ToEventDocument).ToList(),
-            Periods = match.Periods.Select(ToPeriodDocument).ToList()
+            Periods = match.Periods.Select(ToPeriodDocument).ToList(),
+            HomePlayers = match.HomePlayers.Select(p => new PlayerDocument { Id = p.Id, Name = p.Name, Number = p.Number }).ToList(),
+            AwayPlayers = match.AwayPlayers.Select(p => new PlayerDocument { Id = p.Id, Name = p.Name, Number = p.Number }).ToList()
         };
     }
 
@@ -56,6 +58,16 @@ public static class MatchFirestoreMapper
         foreach (var periodDoc in doc.Periods)
             periodsList.Add(ToPeriodDomain(periodDoc));
 
+        var homePlayersField = typeof(Match).GetField("_homePlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var homePlayersList = (List<PlayerInfo>)homePlayersField.GetValue(match)!;
+        foreach (var pd in doc.HomePlayers)
+            homePlayersList.Add(PlayerInfo.Restore(pd.Id, pd.Name, pd.Number));
+
+        var awayPlayersField = typeof(Match).GetField("_awayPlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var awayPlayersList = (List<PlayerInfo>)awayPlayersField.GetValue(match)!;
+        foreach (var pd in doc.AwayPlayers)
+            awayPlayersList.Add(PlayerInfo.Restore(pd.Id, pd.Name, pd.Number));
+
         return match;
     }
 
@@ -83,10 +95,6 @@ public static class MatchFirestoreMapper
                 doc.CoordinatesX = (double)missed.Coordinates.X;
                 doc.CoordinatesY = (double)missed.Coordinates.Y;
                 break;
-            case FreeThrowEvent freeThrow:
-                doc.Made = freeThrow.Made;
-                doc.FoulType = (int)freeThrow.FoulType;
-                break;
             case FoulEvent foul:
                 doc.FoulType = (int)foul.FoulType;
                 doc.PlayerFouledId = foul.PlayerFouledId;
@@ -94,6 +102,8 @@ public static class MatchFirestoreMapper
                 break;
             case SubstitutionEvent substitution:
                 doc.PlayerOutId = substitution.PlayerOutId;
+                break;
+            case TurnoverEvent:
                 break;
         }
 
@@ -113,16 +123,15 @@ public static class MatchFirestoreMapper
                 doc.TeamId, doc.PlayerId,
                 new Coordinates((decimal)doc.CoordinatesX!.Value, (decimal)doc.CoordinatesY!.Value),
                 (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
-            EventType.FreeThrow => new FreeThrowEvent(
-                doc.TeamId, doc.PlayerId, doc.Made!.Value,
-                (FoulType)doc.FoulType!.Value,
-                (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
             EventType.Foul => new FoulEvent(
                 doc.TeamId, doc.PlayerId, (FoulType)doc.FoulType!.Value,
                 doc.PlayerFouledId!, doc.Flagrant!.Value,
                 (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
             EventType.Substitution => new SubstitutionEvent(
                 doc.TeamId, doc.PlayerId, doc.PlayerOutId!,
+                (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
+            EventType.Turnover => new TurnoverEvent(
+                doc.TeamId, doc.PlayerId,
                 (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
             _ => throw new InvalidOperationException($"Unknown event type: {type}")
         };

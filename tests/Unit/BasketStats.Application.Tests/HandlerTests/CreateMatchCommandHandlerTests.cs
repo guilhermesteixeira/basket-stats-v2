@@ -82,4 +82,46 @@ public class CreateMatchCommandHandlerTests
         // Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => CreateHandler().Handle(command, default));
     }
+
+    [Fact]
+    public async Task Handle_WithPlayerRosters_CreatesMatchWithPlayers()
+    {
+        // Arrange
+        var homeTeam = Team.Create("home-1", "Home Team", "owner-1");
+        var awayTeam = Team.Create("away-1", "Away Team", "owner-2");
+        var user = User.Create("user-1", "user@test.com", "Test User", "user-1");
+
+        _teamRepo.Setup(r => r.GetByIdAsync("home-1", default)).ReturnsAsync(homeTeam);
+        _teamRepo.Setup(r => r.GetByIdAsync("away-1", default)).ReturnsAsync(awayTeam);
+        _userRepo.Setup(r => r.GetByKeycloakIdAsync("user-1", default)).ReturnsAsync(user);
+
+        DomainMatch? savedMatch = null;
+        _matchRepo.Setup(r => r.SaveAsync(It.IsAny<DomainMatch>(), default))
+            .Callback<DomainMatch, CancellationToken>((m, _) => savedMatch = m)
+            .Returns(Task.CompletedTask);
+
+        var homePlayers = new List<PlayerInput>
+        {
+            new("LeBron James", 23),
+            new("Anthony Davis", 3),
+        };
+        var awayPlayers = new List<PlayerInput>
+        {
+            new("Jayson Tatum", 0),
+        };
+
+        var command = new CreateMatchCommand("home-1", "away-1", "user-1", homePlayers, awayPlayers);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        Assert.NotEmpty(result);
+        Assert.NotNull(savedMatch);
+        Assert.Equal(2, savedMatch!.HomePlayers.Count);
+        Assert.Equal(1, savedMatch.AwayPlayers.Count);
+        Assert.Equal("LeBron James", savedMatch.HomePlayers[0].Name);
+        Assert.Equal(23, savedMatch.HomePlayers[0].Number);
+        Assert.Equal("Jayson Tatum", savedMatch.AwayPlayers[0].Name);
+    }
 }

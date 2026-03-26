@@ -12,7 +12,6 @@ public class EventDto
     public int? Points { get; set; }
     public decimal? CoordinatesX { get; set; }
     public decimal? CoordinatesY { get; set; }
-    public bool? Made { get; set; }
     public string? FoulType { get; set; }
     public string? PlayerFouledId { get; set; }
     public bool? Flagrant { get; set; }

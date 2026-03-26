@@ -11,9 +11,9 @@ public enum EventType
 {
     Score = 1,
     MissedShot = 2,
-    FreeThrow = 3,
     Foul = 4,
-    Substitution = 5
+    Substitution = 5,
+    Turnover = 6
 }
 
 public enum FoulType

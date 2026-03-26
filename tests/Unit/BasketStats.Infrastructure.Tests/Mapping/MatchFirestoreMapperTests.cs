@@ -87,24 +87,23 @@ public class MatchFirestoreMapperTests
     }
 
     [Fact]
-    public void ToDocument_MatchWithFreeThrowEvent_MapsEventCorrectly()
+    public void ToDocument_MatchWithTurnoverEvent_MapsEventCorrectly()
     {
         // Arrange
         var match = CreateActiveMatch();
-        var ftEvent = new FreeThrowEvent("home-team-1", "player-1", true,
-            FoulType.Personal, PeriodNumber.Two, 300);
-        match.AddEvent(ftEvent);
+        var turnoverEvent = new TurnoverEvent("home-team-1", "player-1",
+            PeriodNumber.Two, 300);
+        match.AddEvent(turnoverEvent);
 
         // Act
         var doc = MatchFirestoreMapper.ToDocument(match);
 
         // Assert
         var eventDoc = Assert.Single(doc.Events);
-        Assert.Equal((int)EventType.FreeThrow, eventDoc.Type);
-        Assert.True(eventDoc.Made);
-        Assert.Equal((int)FoulType.Personal, eventDoc.FoulType);
+        Assert.Equal((int)EventType.Turnover, eventDoc.Type);
         Assert.Null(eventDoc.CoordinatesX);
         Assert.Null(eventDoc.CoordinatesY);
+        Assert.Null(eventDoc.Points);
     }
 
     [Fact]
@@ -195,9 +194,9 @@ public class MatchFirestoreMapperTests
         var match = CreateActiveMatch();
         match.AddEvent(new ScoreEvent("home-team-1", "p1", 2, new Coordinates(25m, 25m), PeriodNumber.One, 60));
         match.AddEvent(new MissedShotEvent("home-team-1", "p1", new Coordinates(50m, 50m), PeriodNumber.One, 120));
-        match.AddEvent(new FreeThrowEvent("home-team-1", "p1", true, FoulType.Personal, PeriodNumber.One, 180));
-        match.AddEvent(new FoulEvent("home-team-1", "p1", FoulType.Technical, "p2", false, PeriodNumber.One, 240));
-        match.AddEvent(new SubstitutionEvent("home-team-1", "p3", "p1", PeriodNumber.One, 300));
+        match.AddEvent(new FoulEvent("home-team-1", "p1", FoulType.Technical, "p2", false, PeriodNumber.One, 180));
+        match.AddEvent(new SubstitutionEvent("home-team-1", "p3", "p1", PeriodNumber.One, 240));
+        match.AddEvent(new TurnoverEvent("home-team-1", "p1", PeriodNumber.One, 300));
         var doc = MatchFirestoreMapper.ToDocument(match);
 
         // Act
@@ -207,9 +206,9 @@ public class MatchFirestoreMapperTests
         Assert.Equal(5, result.Events.Count);
         Assert.IsType<ScoreEvent>(result.Events[0]);
         Assert.IsType<MissedShotEvent>(result.Events[1]);
-        Assert.IsType<FreeThrowEvent>(result.Events[2]);
-        Assert.IsType<FoulEvent>(result.Events[3]);
-        Assert.IsType<SubstitutionEvent>(result.Events[4]);
+        Assert.IsType<FoulEvent>(result.Events[2]);
+        Assert.IsType<SubstitutionEvent>(result.Events[3]);
+        Assert.IsType<TurnoverEvent>(result.Events[4]);
     }
 
     [Fact]

@@ -26,12 +26,9 @@ public class GetMatchQueryHandlerTests
             new Coordinates(50, 50), PeriodNumber.One, 60);
         var awayScore = new ScoreEvent("away-1", "player-2", 3,
             new Coordinates(30, 30), PeriodNumber.One, 90);
-        var homeFreeThrow = new FreeThrowEvent("home-1", "player-1", true,
-            Domain.Enums.FoulType.Personal, PeriodNumber.One, 120);
 
         match.AddEvent(homeScore);
         match.AddEvent(awayScore);
-        match.AddEvent(homeFreeThrow);
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
 
@@ -40,9 +37,9 @@ public class GetMatchQueryHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(3, result.HomeScore); // 2 points + 1 free throw
+        Assert.Equal(2, result.HomeScore); // 2 points
         Assert.Equal(3, result.AwayScore); // 3 points
-        Assert.Equal(3, result.Events.Count);
+        Assert.Equal(2, result.Events.Count);
     }
 
     // TC-MATCH-007: Fail to retrieve non-existent match (returns null → 404)
@@ -59,40 +56,16 @@ public class GetMatchQueryHandlerTests
         Assert.Null(result);
     }
 
-    // TC-EVENT-028: Made free throw counts as 1 point
+    // TC-EVENT-028: Turnover event tracked in match events
     [Fact]
-    public async Task Handle_MadeFreeThrow_CountsAsOnePoint()
+    public async Task Handle_TurnoverEvent_TrackedInEvents()
     {
         // Arrange
         var match = DomainMatch.Create("home-1", "away-1");
         match.Start();
 
-        var madeFreeThrow = new FreeThrowEvent("home-1", "player-1", true,
-            Domain.Enums.FoulType.Personal, PeriodNumber.One, 60);
-        match.AddEvent(madeFreeThrow);
-
-        _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-
-        // Act
-        var result = await CreateHandler().Handle(new GetMatchQuery(match.Id.Value), default);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(1, result.HomeScore);
-        Assert.Equal(0, result.AwayScore);
-    }
-
-    // TC-EVENT-029: Missed free throw counts as 0 points
-    [Fact]
-    public async Task Handle_MissedFreeThrow_CountsAsZeroPoints()
-    {
-        // Arrange
-        var match = DomainMatch.Create("home-1", "away-1");
-        match.Start();
-
-        var missedFreeThrow = new FreeThrowEvent("home-1", "player-1", false,
-            Domain.Enums.FoulType.Personal, PeriodNumber.One, 60);
-        match.AddEvent(missedFreeThrow);
+        var turnover = new TurnoverEvent("home-1", "player-1", PeriodNumber.One, 60);
+        match.AddEvent(turnover);
 
         _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
 
@@ -103,34 +76,7 @@ public class GetMatchQueryHandlerTests
         Assert.NotNull(result);
         Assert.Equal(0, result.HomeScore);
         Assert.Equal(0, result.AwayScore);
-    }
-
-    // TC-EVENT-030: Track made vs missed free throws separately in events list
-    [Fact]
-    public async Task Handle_FreeThrows_TrackedSeparatelyInEvents()
-    {
-        // Arrange
-        var match = DomainMatch.Create("home-1", "away-1");
-        match.Start();
-
-        var madeFreeThrow = new FreeThrowEvent("home-1", "player-1", true,
-            Domain.Enums.FoulType.Personal, PeriodNumber.One, 60);
-        var missedFreeThrow = new FreeThrowEvent("home-1", "player-1", false,
-            Domain.Enums.FoulType.Personal, PeriodNumber.One, 90);
-
-        match.AddEvent(madeFreeThrow);
-        match.AddEvent(missedFreeThrow);
-
-        _matchRepo.Setup(r => r.GetByIdAsync(match.Id.Value, default)).ReturnsAsync(match);
-
-        // Act
-        var result = await CreateHandler().Handle(new GetMatchQuery(match.Id.Value), default);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(2, result.Events.Count);
-        Assert.All(result.Events, e => Assert.Equal("FreeThrow", e.Type));
-        Assert.Contains(result.Events, e => e.Made == true);
-        Assert.Contains(result.Events, e => e.Made == false);
+        Assert.Single(result.Events);
+        Assert.Equal("Turnover", result.Events[0].Type);
     }
 }
