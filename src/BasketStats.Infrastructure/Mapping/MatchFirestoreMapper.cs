@@ -50,7 +50,11 @@ public static class MatchFirestoreMapper
         var eventsField = typeof(Match).GetField("_events", BindingFlags.NonPublic | BindingFlags.Instance)!;
         var eventsList = (List<Event>)eventsField.GetValue(match)!;
         foreach (var eventDoc in doc.Events)
-            eventsList.Add(ToEventDomain(eventDoc));
+        {
+            var domainEvent = ToEventDomain(eventDoc);
+            if (domainEvent is not null)
+                eventsList.Add(domainEvent);
+        }
 
         var periodsField = typeof(Match).GetField("_periods", BindingFlags.NonPublic | BindingFlags.Instance)!;
         var periodsList = (List<Period>)periodsField.GetValue(match)!;
@@ -110,10 +114,10 @@ public static class MatchFirestoreMapper
         return doc;
     }
 
-    public static Event ToEventDomain(EventDocument doc)
+    public static Event? ToEventDomain(EventDocument doc)
     {
         var type = (EventType)doc.Type;
-        Event @event = type switch
+        Event? @event = type switch
         {
             EventType.Score => new ScoreEvent(
                 doc.TeamId, doc.PlayerId, doc.Points!.Value,
@@ -133,8 +137,11 @@ public static class MatchFirestoreMapper
             EventType.Turnover => new TurnoverEvent(
                 doc.TeamId, doc.PlayerId,
                 (PeriodNumber)doc.PeriodNumber, doc.PeriodTimestamp),
-            _ => throw new InvalidOperationException($"Unknown event type: {type}")
+            _ => null // Skip unknown/legacy event types (e.g. removed FreeThrow=3)
         };
+
+        if (@event is null)
+            return null;
 
         typeof(Event).GetProperty(nameof(Event.Id))!.SetValue(@event, new EventId(doc.Id));
         typeof(Event).GetProperty(nameof(Event.Timestamp))!.SetValue(@event, doc.Timestamp);

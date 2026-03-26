@@ -246,4 +246,48 @@ public class MatchFirestoreMapperTests
         Assert.Equal(PeriodNumber.Three, result.Periods[2].Number);
         Assert.Equal(PeriodNumber.Four, result.Periods[3].Number);
     }
+
+    [Fact]
+    public void ToEventDomain_UnknownEventType_ReturnsNull()
+    {
+        var doc = new EventDocument
+        {
+            Id = "evt-1",
+            Type = 99, // unknown/legacy type
+            TeamId = "team-1",
+            PlayerId = "player-1",
+            PeriodNumber = 1,
+            PeriodTimestamp = 60,
+            Timestamp = DateTime.UtcNow,
+        };
+
+        var result = MatchFirestoreMapper.ToEventDomain(doc);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ToDomain_DocumentWithLegacyEventType_SkipsUnknownEvents()
+    {
+        var match = CreateActiveMatch();
+        match.AddEvent(new ScoreEvent("home-team-1", "p1", 2, new Coordinates(25m, 25m), PeriodNumber.One, 60));
+        var doc = MatchFirestoreMapper.ToDocument(match);
+
+        // Inject a legacy FreeThrow event (type=3) into the document
+        doc.Events.Add(new EventDocument
+        {
+            Id = "legacy-ft",
+            Type = 3,
+            TeamId = "home-team-1",
+            PlayerId = "p1",
+            PeriodNumber = 1,
+            PeriodTimestamp = 120,
+            Timestamp = DateTime.UtcNow,
+        });
+
+        var result = MatchFirestoreMapper.ToDomain(doc);
+
+        Assert.Single(result.Events); // legacy event skipped
+        Assert.IsType<ScoreEvent>(result.Events[0]);
+    }
 }
