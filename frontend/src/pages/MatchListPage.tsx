@@ -8,9 +8,11 @@ import { useAuthStore } from '../auth/AuthProvider'
 import { createMatch } from '../api/matches'
 import { createTeam } from '../api/teams'
 import { CreateTeamModal } from '../components/onboarding/CreateTeamModal'
+import { PlayerRosterForm } from '../components/domain/PlayerRosterForm'
 import { MatchCard } from '../components/domain/MatchCard'
 import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
+import type { PlayerInput } from '../types'
 
 export function MatchListPage() {
   const navigate = useNavigate()
@@ -26,6 +28,8 @@ export function MatchListPage() {
   const [side, setSide] = useState<'home' | 'away'>('home')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [homePlayers, setHomePlayers] = useState<PlayerInput[]>([])
+  const [awayPlayers, setAwayPlayers] = useState<PlayerInput[]>([])
 
   // Inline "create new team" state
   const [showNewTeam, setShowNewTeam] = useState(false)
@@ -59,9 +63,15 @@ export function MatchListPage() {
     setCreating(true)
     setCreateError(null)
     try {
-      const homeTeamId = side === 'home' ? myTeam.id : opponentId
-      const awayTeamId = side === 'home' ? opponentId : myTeam.id
-      const match = await createMatch({ homeTeamId, awayTeamId })
+      const isHome = side === 'home'
+      const homeTeamId = isHome ? myTeam.id : opponentId
+      const awayTeamId = isHome ? opponentId : myTeam.id
+      const match = await createMatch({
+        homeTeamId,
+        awayTeamId,
+        homePlayers: homePlayers.length > 0 ? homePlayers : undefined,
+        awayPlayers: awayPlayers.length > 0 ? awayPlayers : undefined,
+      })
       navigate(`/matches/${match.id}/live`)
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Failed to create match')
@@ -85,6 +95,9 @@ export function MatchListPage() {
       </div>
     )
   }
+
+  const myTeamName = myTeam?.name ?? 'Your team'
+  const opponentName = teams?.find(t => t.id === opponentId)?.name ?? 'Opponent'
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -188,6 +201,23 @@ export function MatchListPage() {
                   />
                   Away
                 </label>
+              </div>
+            </div>
+
+            {/* Player Rosters */}
+            <div className="border-t border-slate-700 pt-4 space-y-4">
+              <h3 className="text-white font-medium text-sm">Player Rosters</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PlayerRosterForm
+                  label={`${side === 'home' ? myTeamName : opponentName} (Home)`}
+                  players={homePlayers}
+                  onChange={setHomePlayers}
+                />
+                <PlayerRosterForm
+                  label={`${side === 'away' ? myTeamName : opponentName} (Away)`}
+                  players={awayPlayers}
+                  onChange={setAwayPlayers}
+                />
               </div>
             </div>
 

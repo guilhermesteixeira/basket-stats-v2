@@ -18,10 +18,8 @@ public record AddEventCommand : IRequest<string>
     public decimal? CoordinatesY { get; init; }
     // Score only
     public int? Points { get; init; }
-    // FreeThrow
-    public bool? Made { get; init; }
-    public FoulType? FoulType { get; init; }
     // Foul
+    public FoulType? FoulType { get; init; }
     public string? PlayerFouledId { get; init; }
     public bool? Flagrant { get; init; }
     // Substitution

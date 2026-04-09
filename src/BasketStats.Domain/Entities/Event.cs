@@ -66,16 +66,11 @@ public class MissedShotEvent : Event
     }
 }
 
-public class FreeThrowEvent : Event
+public class TurnoverEvent : Event
 {
-    public bool Made { get; }
-    public FoulType FoulType { get; }
-
-    public FreeThrowEvent(string teamId, string playerId, bool made, FoulType foulType, PeriodNumber periodNumber, int periodTimestamp)
-        : base(teamId, playerId, EventType.FreeThrow, periodNumber, periodTimestamp)
+    public TurnoverEvent(string teamId, string playerId, PeriodNumber periodNumber, int periodTimestamp)
+        : base(teamId, playerId, EventType.Turnover, periodNumber, periodTimestamp)
     {
-        Made = made;
-        FoulType = foulType;
     }
 }
 

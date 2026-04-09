@@ -66,7 +66,7 @@ public class AddEventCommandHandler(
     }
 
     private static bool IsOpponentTrackingAllowed(EventType type) =>
-        type is EventType.Score or EventType.MissedShot or EventType.FreeThrow;
+        type is EventType.Score or EventType.MissedShot or EventType.Turnover;
 
     private static Event CreateEvent(AddEventCommand cmd) =>
         cmd.Type switch
@@ -86,14 +86,6 @@ public class AddEventCommandHandler(
                 cmd.PeriodNumber,
                 cmd.PeriodTimestamp),
 
-            EventType.FreeThrow => new FreeThrowEvent(
-                cmd.TeamId,
-                cmd.PlayerId,
-                cmd.Made!.Value,
-                cmd.FoulType!.Value,
-                cmd.PeriodNumber,
-                cmd.PeriodTimestamp),
-
             EventType.Foul => new FoulEvent(
                 cmd.TeamId,
                 cmd.PlayerId,
@@ -107,6 +99,12 @@ public class AddEventCommandHandler(
                 cmd.TeamId,
                 cmd.PlayerId,
                 cmd.PlayerOutId!,
+                cmd.PeriodNumber,
+                cmd.PeriodTimestamp),
+
+            EventType.Turnover => new TurnoverEvent(
+                cmd.TeamId,
+                cmd.PlayerId,
                 cmd.PeriodNumber,
                 cmd.PeriodTimestamp),
 

@@ -5,6 +5,7 @@ using BasketStats.Application.Commands;
 using BasketStats.Application.Exceptions;
 using BasketStats.Domain.Abstractions;
 using BasketStats.Domain.Entities;
+using BasketStats.Domain.ValueObjects;
 
 public class CreateMatchCommandHandler(
     IMatchRepository matchRepository,
@@ -25,7 +26,15 @@ public class CreateMatchCommandHandler(
         if (user is null)
             throw new NotFoundException($"User '{request.RequestedByUserId}' not found");
 
-        var match = Match.Create(request.HomeTeamId, request.AwayTeamId);
+        var homePlayers = request.HomePlayers?
+            .Select(p => PlayerInfo.Create(p.Name, p.Number))
+            .ToList();
+
+        var awayPlayers = request.AwayPlayers?
+            .Select(p => PlayerInfo.Create(p.Name, p.Number))
+            .ToList();
+
+        var match = Match.Create(request.HomeTeamId, request.AwayTeamId, homePlayers, awayPlayers);
         await matchRepository.SaveAsync(match, cancellationToken);
 
         return match.Id.Value;

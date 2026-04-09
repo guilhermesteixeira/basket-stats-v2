@@ -17,19 +17,16 @@ public class GetPlayerStatsQueryHandler(IMatchRepository matchRepository) : IReq
         var playerEvents = match.Events.Where(e => e.PlayerId == request.PlayerId).ToList();
 
         var shotsMade = playerEvents.OfType<ScoreEvent>().Sum(e => e.Points);
-        var freeThrowsMade = playerEvents.OfType<FreeThrowEvent>().Count(e => e.Made);
-        var freeThrowsMissed = playerEvents.OfType<FreeThrowEvent>().Count(e => !e.Made);
 
         return new PlayerStatsDto
         {
             PlayerId = request.PlayerId,
             MatchId = request.MatchId,
-            TotalPoints = shotsMade + freeThrowsMade,
-            FreeThrowsMade = freeThrowsMade,
-            FreeThrowsMissed = freeThrowsMissed,
+            TotalPoints = shotsMade,
             Fouls = playerEvents.OfType<FoulEvent>().Count(),
             ShotsMade = playerEvents.OfType<ScoreEvent>().Count(),
-            ShotsMissed = playerEvents.OfType<MissedShotEvent>().Count()
+            ShotsMissed = playerEvents.OfType<MissedShotEvent>().Count(),
+            Turnovers = playerEvents.OfType<TurnoverEvent>().Count()
         };
     }
 }

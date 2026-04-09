@@ -11,7 +11,7 @@ interface EventFormProps {
   onSuccess: () => void
 }
 
-const EVENT_TYPES: EventType[] = ['Score', 'MissedShot', 'FreeThrow', 'Foul', 'Substitution']
+const EVENT_TYPES: EventType[] = ['Score', 'MissedShot', 'Foul', 'Substitution', 'Turnover']
 
 export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
   const { online } = useNetworkStatus()
@@ -27,7 +27,7 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
     setEventType(newType)
     setCoords(undefined)
     // Reset with sensible defaults per type
-    setDetails(newType === 'Score' ? { points: 2 } : newType === 'FreeThrow' ? { made: true, foulType: 'Personal' } : newType === 'Foul' ? { foulType: 'Personal', flagrant: false } : {})
+    setDetails(newType === 'Score' ? { points: 2 } : newType === 'Foul' ? { foulType: 'Personal', flagrant: false } : {})
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -53,10 +53,6 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
       ...(eventType === 'MissedShot' && {
         coordinatesX: coords!.x,
         coordinatesY: coords!.y,
-      }),
-      ...(eventType === 'FreeThrow' && {
-        made: details.made ?? false,
-        foulType: details.foulType ?? 'Personal',
       }),
       ...(eventType === 'Foul' && {
         foulType: details.foulType ?? 'Personal',
@@ -163,44 +159,6 @@ export function EventForm({ matchId, teamId, onSuccess }: EventFormProps) {
             placeholder="Player name"
             className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
           />
-        </div>
-      )}
-
-      {eventType === 'FreeThrow' && (
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-xs text-slate-400 mb-1">Result</label>
-            <select
-              value={details.made === true ? 'made' : 'missed'}
-              onChange={(e) => setDetails((d) => ({ ...d, made: e.target.value === 'made' }))}
-              className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
-            >
-              <option value="made">Made</option>
-              <option value="missed">Missed</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-slate-400 mb-1">Foul Type</label>
-            <select
-              value={details.foulType ?? 'Personal'}
-              onChange={(e) => setDetails((d) => ({ ...d, foulType: e.target.value }))}
-              className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
-            >
-              <option value="Personal">Personal</option>
-              <option value="Technical">Technical</option>
-              <option value="Flagrant">Flagrant</option>
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-xs text-slate-400 mb-1">Player</label>
-            <input
-              type="text"
-              value={details.playerId ?? ''}
-              onChange={(e) => setDetails((d) => ({ ...d, playerId: e.target.value }))}
-              placeholder="Player name"
-              className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm"
-            />
-          </div>
         </div>
       )}
 
